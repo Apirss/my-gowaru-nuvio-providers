@@ -1,6 +1,6 @@
 {
   "name": "Gowaru's Repo",
-  "version": "1.2.1",
+  "version": "1.2.3",
   "scrapers": [
     {
       "id": "anime-ultime",
@@ -149,7 +149,7 @@
       "id": "coflix",
       "name": "Coflix",
       "description": "Films et séries en streaming VF/VOSTFR sur Coflix.wiki (API AJAX, lecteurs Vidzy/Uqload/FSVID).",
-      "version": "2.0.4",
+      "version": "2.0.5",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
@@ -219,7 +219,7 @@
       "id": "flemmix",
       "name": "Flemmix",
       "description": "Films et séries en streaming VF/VOSTFR sur Flemmix (serveurs signés multi-sources, recherche bilingue FR/EN).",
-      "version": "1.0.13",
+      "version": "1.0.14",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
@@ -317,7 +317,7 @@
       "id": "movix",
       "name": "Movix",
       "description": "Films, Séries et Animes en VF et VOSTFR.",
-      "version": "0.1.4",
+      "version": "0.1.5",
       "hasSettings": true,
       "author": "Gowaru",
       "supportedTypes": [
@@ -867,7 +867,7 @@
       "id": "webflix",
       "name": "Webflix",
       "description": "Films et séries VF/VOSTFR via webflix.art (MP4 directs FastFlux + lecteurs Frembed/Zenix).",
-      "version": "0.1.2",
+      "version": "0.1.4",
       "hasSettings": true,
       "author": "Gowaru",
       "supportedTypes": [

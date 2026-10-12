@@ -108,6 +108,8 @@ function makeDirect(url, langRaw, size, apiQuality, label, defaultLang, extraHay
   const lang = detectLangRaw(langRaw, url, defaultLang, extraHaystack);
   const headers = streamHeaders(url);
   delete headers._cdnOrigin;
+  // type dérivé de l'URL : HLS (/v1/ anime Zenix, .m3u8) ≠ MP4 FastFlux
+  const isHls = /\.m3u8([?#]|$)/i.test(url) || /\/v1\/(?:anime|tv|movie)\?/i.test(url);
   return {
     name: PROVIDER_NAME,
     title: `[${lang}] Webflix FastFlux ${label}`,
@@ -115,10 +117,24 @@ function makeDirect(url, langRaw, size, apiQuality, label, defaultLang, extraHay
     quality: qualityFromApi(apiQuality, size),
     language: lang,
     ...(size ? { size: String(size) } : {}),
-    type: 'mp4',
+    type: isHls ? 'hls' : 'mp4',
     isDirect: true,
     headers,
   };
+}
+
+/**
+ * VOSTFR par miroir CDN : l'API FastFlux ne sert QUE du VF, mais le CDN
+ * mongo-loko expose systématiquement le chemin VOSTFR miroir du chemin VF
+ * (vérifié live 2026-10 : /animes/VF/<X>/S01/<X>-S01-E01.mp4 ↔ /animes/VOSTFR/<X>/…
+ * répondent 200 head pour les animés courants). Substitution de path —
+ * la disponibilité effective est garantie par le runtime (404 → erreur de
+ * lecture, Nuvio passe au stream suivant automatiquement).
+ */
+function buildVostfrMirror(url) {
+  if (!url || typeof url !== 'string') return null;
+  const m = url.match(/^(https:\/\/[^/]+\/)animes\/VF\/([^.]+\.[a-z0-9]+)$/i);
+  return m ? `${m[1]}animes/VOSTFR/${m[2]}` : null;
 }
 
 function makeEmbed(url, langRaw, source, defaultLang, extraHaystack) {
@@ -361,6 +377,33 @@ function extractEmbedStreamUrls(html, baseUrl) {
     const clean = u.replace(/\\\//g, '/');
     if (/^https?:\/\//i.test(clean) && !out.includes(clean)) out.push(clean);
   };
+  // 0. Player anime Zenix : videoUrl = "https://stream.fluxora.sbs/v1/anime?t=…&format=hls"
+  // (HLS natif servi pré-tokenisé ; le résolveur générique ne peut pas l'extraire
+  // car l'URL est construite en JS — extraction en amont ici).
+  try {
+    const m = String(html || '').match(/videoUrl\s*=\s*(?:window\.ZenixCdnDirect\s*\?\s*window\.ZenixCdnDirect\.prepare\s*\(\s*)?"([^"]{20,600})"/i);
+    if (m) {
+      const direct = m[1].replace(/\\u0026/g, '&').replace(/\\\//g, '/');
+      if (/^https?:\/\//i.test(direct)) push(direct);
+    }
+  } catch (e) {}
+  // 0b. URL /v1/anime tokenisée en clair : la page player anime déclare son flux
+  // HLS direct (hls.min.js + preconnect stream.fluxora.sbs dans <head>). Extraction
+  // par string-scan double quote (regex multi-échappements fragile sinon).
+  try {
+    const raw = String(html || '');
+    const marker = 'stream.fluxora.sbs/v1/';
+    let idx = raw.indexOf(marker);
+    while (idx !== -1) {
+      const start = raw.lastIndexOf('"', idx);
+      const end = raw.indexOf('"', idx);
+      if (start !== -1 && end !== -1 && end > idx + marker.length && end - start < 600) {
+        const cleaned = raw.slice(start + 1, end).replace(/\\u0026/g, '&').replace(/\\\//g, '/');
+        if (/^https:\/\/stream\.fluxora\.sbs\/v1\/[^\s"]+$/.test(cleaned) && !out.some((u) => u.slice(0, 90) === cleaned.slice(0, 90))) push(cleaned);
+      }
+      idx = raw.indexOf(marker, idx + 1);
+    }
+  } catch (e) {}
   // 1. Tableaux JS urls=["…"] (page /embed/anime/… → sibnet & co)
   try {
     const arrRe = /urls\s*=\s*\[([^\]]{0,4000})\]/g;
@@ -443,6 +486,14 @@ async function resolveZenix(zenixUrl, prefs, signal, startTime, seenUrls) {
         if (isAborted(signal) || isBudgetExhausted(startTime, BUDGET_MS)) break;
         if (found.length >= TARGET_STREAMS) break;
         if (seenUrls.has(u)) continue;
+        // URL /v1/anime|tv|movie stream.fluxora.sbs → HLS direct pré-tokenisé.
+        // NE PAS la passer à resolveStream (elle repartirait en peeling
+        // infructueux) — la servir directement comme stream direct.
+        if (/^https:\/\/stream\.fluxora\.sbs\/v1\//i.test(u)) {
+          seenUrls.add(u);
+          found.push(makeDirect(u, tag, undefined, undefined, 'Zenix'));
+          continue;
+        }
         seenUrls.add(u);
         const cand = makeEmbed(u, tag, 'Zenix');
         let r = null;
@@ -572,7 +623,14 @@ async function extractMovie(tmdbId, prefs, signal, startTime) {
     if (!hasExplicitLangSignal(ff.language, ff.url)) {
       def = defaultLangForOriginal(await fetchOriginalLanguage(tmdbId, 'movie', null, startTime));
     }
-    return [makeDirect(ff.url, ff.language, ff.size, ff.quality, 'Film', def)];
+    const out = [makeDirect(ff.url, ff.language, ff.size, ff.quality, 'Film', def)];
+    // Miroir VOSTFR (CDN mongo-loko) : animés uniquement, jamais pour les films
+    // (FastFlux movie SORTIT un faux S01E01 → chemin /animes/ inutilisable)
+    if (/\/animes\/VF\//.test(ff.url)) {
+      const vost = buildVostfrMirror(ff.url);
+      if (vost) out.push(makeDirect(vost, 'VOSTFR', ff.size, ff.quality, 'Film', 'VOSTFR'));
+    }
+    return out;
   }
   if (isAborted(signal) || isBudgetExhausted(startTime, BUDGET_MS)) return [];
 
@@ -658,7 +716,13 @@ async function extractSeries(tmdbId, season, episode, prefs, signal, startTime) 
         if (!hasExplicitLangSignal(lang, entry.url)) {
           def = defaultLangForOriginal(await fetchOriginalLanguage(tmdbId, 'tv', null, startTime));
         }
-        return [makeDirect(entry.url, lang, size, quality, label, def)];
+        const out = [makeDirect(entry.url, lang, size, quality, label, def)];
+        // Miroir VOSTFR (animés uniquement, cf. extractMovie)
+        if (/\/animes\/VF\//.test(entry.url)) {
+          const vost = buildVostfrMirror(entry.url);
+          if (vost) out.push(makeDirect(vost, 'VOSTFR', size, quality, label, 'VOSTFR'));
+        }
+        return out;
       }
       console.log(`[Webflix] Discovery: clé ${s}-${e} absente (${Object.keys(disc).length} entrée(s))`);
     }

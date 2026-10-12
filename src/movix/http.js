@@ -29,8 +29,15 @@ export const HEADERS = {
  * (fstream + wiflix + j1f) pouvait dépasser 25-30 s avant le 1er stream.
  * Réduit à 400 ms + 800 ms : suffisant pour les rafales CF brèves, sans
  * sacrifier le budget de résolution des embeds (le vrai goulot de latence).
+ *
+ * 2026-10 : l'API renvoie des rafales 503 CF **transitoires** (vérifié live :
+ * JJK/MHA tombaient en 503 pendant les premières tentatives, puis 200/404
+ * quelques secondes plus tard, SANS évolution côté cache). Ces 503 ne sont
+ * PAS définitifs → on tente un 3e essai court après 1500 ms quand un 503 a
+ * été observé pendant la rafale (les 404 restent définitifs et stoppent la
+ * boucle immédiatement).
  */
-const RETRY_DELAYS = [400, 800];
+const RETRY_DELAYS = [400, 800, 1500];
 
 /**
  * Vérifie si la réponse est un blocage Cloudflare ou une erreur

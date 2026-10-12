@@ -134,12 +134,43 @@ async function getMovieId(slug, opts = {}) {
     return withCache(`mid_${slug}`, async () => {
         const html = await fetchTextSafe(`${SITE}/film/${slug}/`, { ...opts, timeout: PAGE_TIMEOUT });
         if (!html) return null;
-        const m = html.match(/id="watch-page"[^>]*data-id="(\d+)"/) || html.match(/data-id="(\d+)"/);
-        return m ? m[1] : null;
+        const m = html.match(/id="watch-page"[\s\S]{0,200}?data-id="(\d+)"/) || html.match(/data-id="(\d+)"/);
+        if (!m) return null;
+        // data-ep-name (le 1er epId serve par la page) — clé du fallback séquentiel
+        const epm = html.match(/data-ep-name="(\d+)"/) || html.match(/episode_play = { id : "(\d+)"/);
+        return { movieId: m[1], baseEpId: epm ? epm[1] : null };
     }, { successTtl: 300000, failureTtl: 60000 });
 }
 
-// ─── 3. Player (tous les embeds d'un épisode) ───────────────────────────────
+/**
+ * Épisode d'une série. Deux modes :
+ *  1) list-episode → data-num/data-id (records "complets")
+ *  2) Fallback ID séquentiel : les records d'une saison exposent le 1er épisode
+ *     (data-ep-name) et les epIds du site sont s________ consécutifs pour la
+ *     saison entière (vérifié live 2026-10 : AOT VF S1 = 208555→208579, 25/25).
+ *     On POST /ajax/episode/player sur base+offset jusqu'à trouver l'épisode.
+ * Retourne `epId` correspondant au numéro demandé ou null.
+ */
+async function findEpisodeId(movieId, baseEpId, epNum, opts = {}) {
+    // Mode 1 : listing complet d'abord (rapide, 1 requête, cache 120s)
+    const eps = await listEpisodes(movieId, opts);
+    const target = eps.find((e) => e.num === epNum);
+    if (target) return target.epId;
+    // Mode 2 : IDs séquentiels (base = data-ep-name de la page courante)
+    if (!baseEpId) return null;
+    const base = parseInt(baseEpId, 10);
+    if (!Number.isFinite(base) || base <= 0) return null;
+    // Sonde base+epNum-1 puis quelques voisins (gaps éventuels dans la numérotation interne)
+    for (let extra = 0; extra <= 4; extra++) {
+        const candId = String(base + epNum - 1 + extra);
+        // Ne PAS passer par getEpisodeEmbeds (cache) ici : on teste la présence.
+        const json = await ajaxPost(`/ajax/episode/player?episode_id=${candId}`, `episode_id=${candId}`, opts);
+        if (json && Array.isArray(json.message) && json.message.length > 0) return candId;
+    }
+    return null;
+}
+
+// ─── 3. Player (tous les embeds d'un épisode) ─────────────────────────────
 /**
  * POST /ajax/episode/player?episode_id={epId} → liste d'embeds.
  * Chaque record : { version: 'VF'|'VOSTFR'|..., server_link, server_type }.
@@ -255,13 +286,14 @@ export async function extractStreams(tmdbId, mediaType, season, episode, { signa
                 // Film : epId du suggest = fiche unique
                 embeds = await getEpisodeEmbeds(cand.epId, lang, { signal });
             } else {
-                // Série : list-episode du record → epId du numéro demandé
-                const movieId = await getMovieId(cand.slug, { signal });
-                if (!movieId) continue;
-                const eps = await listEpisodes(movieId, { signal });
-                const target = eps.find((e) => e.num === epNum);
-                if (!target) continue; // épisode absent du site : pas de repli
-                embeds = await getEpisodeEmbeds(target.epId, lang, { signal });
+                // Série : list-episode (mode 1) → fallback IDs séquentiels (mode 2)
+                const rec = await getMovieId(cand.slug, { signal });
+                if (!rec) continue;
+                const movieId = typeof rec === 'object' ? rec.movieId : rec;
+                const baseEpId = typeof rec === 'object' ? rec.baseEpId : null;
+                const epId = await findEpisodeId(movieId, baseEpId || cand.epId, epNum, { signal });
+                if (!epId) continue; // épisode absent du site : pas de repli
+                embeds = await getEpisodeEmbeds(epId, lang, { signal });
             }
 
             let resolvedThisLang = 0;
