@@ -219,7 +219,34 @@ async function detectSubType(tmdbId, mediaType, titles) {
  * Fallback sitemap : les sitemaps publics listent TOUTES les fiches du site
  * (652 films / 293 séries vérifiés) même quand la recherche JSON échoue.
  * Requête une seule fois par session (cache 30 min).
+ *
+ * Garde-fou anti-homonymes : le matching inclusion-based seul fait matcher
+ * "The Walking Dead" contre "The Walking Dead Dead City" (spin-off) —
+ * ex. réel constaté. Tout mot significatif du slug (≥ 4 lettres, non
+ * générique, hors saison) qui n'appartient PAS à la requête rejette la fiche,
+ * comme dans le scoring Coflix/Movix.
  */
+const SITEMAP_NOISE_WORDS = new Set([
+  'film', 'movie', ' serie', 'series', 'season', 'show', 'oav', 'special',
+  'complete', 'integral', 'integrale', 'vf', 'vostfr', 'truefrench', 'french',
+  'part', 'partie', 'episode', 'the', 'le', 'la', 'les', 'of', 'a', 'and', 'et',
+])
+
+function sitemapHasForeignWords(slugTitle, queryTitle) {
+  const norm = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  const qWords = new Set(norm(queryTitle).split(/[^a-z0-9]+/).filter(Boolean))
+  const sWords = norm(slugTitle).split(/[^a-z0-9]+/).filter((w) => w.length >= 4 && /^\d+$/.test(w) === false)
+  let foreign = 0
+  for (const w of sWords) {
+    if (SITEMAP_NOISE_WORDS.has(w)) continue
+    if (qWords.has(w)) continue
+    // préfixe/extension : "walking" ~ "walkings"
+    if ([...qWords].some((q) => q.length >= 4 && (w.startsWith(q) || q.startsWith(w)))) continue
+    foreign++
+  }
+  return foreign >= 2 // ex: "dead city" vs "the walking dead" → 2 mots étrangers
+}
+
 async function trySitemap(titles, filterSeries) {
   try {
     const sitemapUrl = filterSeries ? ENDPOINTS.SITEMAP_TVSHOWS : ENDPOINTS.SITEMAP_MOVIES
@@ -240,10 +267,19 @@ async function trySitemap(titles, filterSeries) {
       })
     }
     if (items.length === 0) return null
-    for (const title of titles.slice(0, MAX_SEARCH_TITLES)) {
-      const match = bestMatch(items, title)
-      if (match) return match
+    // Score global sur TOUTES les variantes de titres, puis anti-homonymes.
+    const ranked = []
+    for (const it of items) {
+      let best = 0
+      for (const title of titles.slice(0, MAX_SEARCH_TITLES)) {
+        const s = scoreMatch(it.title, title)
+        if (s > best) best = s
+        if (best >= SCORES.EXACT_MATCH && sitemapHasForeignWords(it.title, title)) best = 0
+      }
+      if (best >= SCORES.MIN_MATCH) ranked.push({ ...it, score: best })
     }
+    ranked.sort((a, b) => b.score - a.score)
+    return ranked[0] || null
   } catch (e) {
     console.warn(`[Flemmix] Sitemap fallback failed: ${e.message}`)
   }

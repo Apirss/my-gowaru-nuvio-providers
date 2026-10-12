@@ -911,6 +911,8 @@ function inferType(url) {
     const u = url.toLowerCase();
     if (u.includes('.m3u8') || u.includes('/hls/') || u.includes('/hls2/') || u.includes('master.m3u8') || u.includes('playlist.m3u8')) return 'hls';
     if (u.includes('.mpd')) return 'dash';
+    // Endpoints HLS pré-tokenisés sans extension (Zenix/fluxora /v1/anime?t=…&format=hls)
+    if (/[?&]format=hls\b/.test(u) || /\/v1\/(anime|tv|movie)\?/.test(u)) return 'hls';
     if (u.includes('.mp4')) return 'mp4';
     if (u.includes('.mkv')) return 'mkv';
     if (u.includes('.webm')) return 'webm';
