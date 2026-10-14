@@ -265,11 +265,28 @@ export const nativeCryptoAvailable = HAS_NATIVE_CRYPTO;
 const RETRY_DELAYS = [1000, 3000, 5000];
 
 /**
- * Busy-wait sleep pour QuickJS (pas de setTimeout).
+ * Vrai si le runtime expose des timers JS.
+ * - NuvioMobile : setTimeout/setInterval polyfillés (coroutine delay, plafond 60 s)
+ * - NuvioTV : AUCUN timer → false
+ * Sert aussi de signal « les requêtes réseau sont bornables » : sans timer,
+ * avecTimeout() ne peut pas courir en parallèle d'un fetch bloquant.
+ * @type {boolean}
+ */
+export const HAS_NATIVE_TIMERS = typeof setTimeout === 'function';
+
+/**
+ * Sleep portable.
+ * - Mobile (timers dispo) : rend la main au runtime (delay coroutine), zéro CPU.
+ * - NuvioTV (aucun timer) : busy-wait microtask — seule option, mais il consomme
+ *   du CPU pendant TOUTE la durée (un retry de 5 s = 5 s de spin) : à éviter.
  * À utiliser dans tous les providers plutôt que de dupliquer.
  */
 export function sleep(ms) {
-  const target = Date.now() + ms;
+  const delay = Number(ms) > 0 ? Number(ms) : 0;
+  if (HAS_NATIVE_TIMERS) {
+    return new Promise(resolve => { setTimeout(resolve, delay); });
+  }
+  const target = Date.now() + delay;
   return new Promise(resolve => {
     const check = () => Date.now() >= target ? resolve() : Promise.resolve().then(check);
     check();
@@ -489,6 +506,11 @@ export function createProvider(name, extractFn, opts = {}) {
       // quand la même URL sert aux deux. Filtre aussi les url vides ou
       // "[object ...]" (rejetées silencieusement côté app).
       const rawList = Array.isArray(rawStreams) ? rawStreams : [];
+      // Échéance d'enrichissement : au-delà, expandStreamQualities ne fait
+      // plus AUCUNE requête optionnelle (manifests HLS, sondes de taille) —
+      // sur NuvioTV elles bloquent la pile JS et peuvent faire jeter le
+      // résultat complet par le 60 s de l'app.
+      const budgetDeadline = startTime + Math.max(5000, PROVIDER_TIMEOUT - 5000);
       const seenUrls = new Set();
       const dedupedRaw = [];
       for (const s of rawList) {
@@ -506,7 +528,7 @@ export function createProvider(name, extractFn, opts = {}) {
       // Tronquer les résultats bruts avant expandStreamQualities
       // pour éviter de parser des HLS manifests inutiles.
       const truncated = dedupedRaw.slice(0, maxStreams * 2);
-      const expanded = await expandStreamQualities(truncated, qualityOpts);
+      const expanded = await expandStreamQualities(truncated, { ...qualityOpts, budgetDeadline });
 
       const elapsed = Date.now() - startTime;
       console.log(`[${name}] Done: ${expanded.length} streams in ${elapsed}ms`);
@@ -608,8 +630,10 @@ const _atob = (str) => {
 };
 
 /**
- * Formate une taille en octets vers une chaîne lisible parsable par NuvioTV
- * (regex: \d+(,\d+)?\s*(TB|GB|MB|KB)).
+ * Formate une taille en octets vers une chaîne lisible parsable par NuvioTV.
+ * Regex réelle du runtime (StreamTextSizeParser.kt, IGNORE_CASE, premier match)
+ * : (\d+(?:[.,]\d+)?)\s*(TB|GB|MB|KB)\b, base 1024 — nos sorties (ex. "1.4 GB")
+ * la respectent ; voir DOCUMENTATION.md §3.2.
  * @param {number} bytes
  * @returns {string|null}
  */
@@ -632,12 +656,20 @@ export function formatSizeBytes(bytes) {
  */
 export async function fetchVideoSize(url, headers = {}) {
     if (!url) return null;
+    // Sans timers (NuvioTV) un HEAD ne peut PAS être borné (withTimeout no-op,
+    // timeout safeFetch ignoré) → un host muet coûte jusqu'au read-timeout
+    // OkHttp (30 s) pour une simple étiquette de taille. On refuse la sonde.
+    if (!HAS_NATIVE_TIMERS) return null;
     try {
         const res = await safeFetch(url, { method: 'HEAD', headers, timeout: 5000 });
         if (!res || !res.ok) return null;
-        const cl = res.headers['content-length'];
+        // ⚠️ La réponse n'expose QUE headers.get(name) (polyfill des 2 apps) :
+        // res.headers['content-length'] est TOUJOURS undefined.
+        const cl = getResponseHeader(res.headers, 'content-length');
         if (!cl) return null;
-        return formatSizeBytes(Number(cl));
+        const bytes = Number(cl);
+        if (!Number.isFinite(bytes) || bytes <= 0) return null;
+        return formatSizeBytes(bytes);
     } catch { return null; }
 }
 
@@ -724,12 +756,15 @@ export function safeConfig(key, defaultVal) {
 }
 
 /**
- * Wraps a promise with a hard timeout (Node.js only).
- * In QuickJS (no setTimeout), simply returns the promise — the app's own 60s
- * context timeout handles it.
+ * Enveloppe une promesse d'un timeout dur.
+ * - Node / NuvioMobile (timers dispo) : Promise.race réelle.
+ * - NuvioTV (aucun timer) : renvoie la promesse INCHANGÉE → le budget
+ *   PROVIDER_BUDGET_MS/TV_BUDGET_MS n'y est PAS appliqué, seul le 60 s de
+ *   l'app coupe (et jette alors tout le travail). D'où l'importance de
+ *   isBudgetExhausted() côté providers pour sortir tôt avec du partiel.
  */
 export async function withTimeout(promise, ms, label = 'Operation') {
-    if (!ms || ms <= 0 || typeof setTimeout === 'undefined') return promise;
+    if (!ms || ms <= 0 || !HAS_NATIVE_TIMERS) return promise;
     let timer;
     const timeout = new Promise((_, reject) => {
         timer = setTimeout(() => reject(new Error(`[Timeout] ${label} exceeded ${ms}ms`)), ms);
@@ -1135,12 +1170,52 @@ function sortStreams(streams) {
     });
 }
 
+/**
+ * Nombre max de manifests HLS réellement téléchargés par appel d'expansion.
+ * Sur NuvioTV, chaque fetch BLOQUE la pile JS (Promise.all = séquentiel) :
+ * 40 m3u8 distincts = 40 GET en série, budget 60 s explosé. Au-delà du cap,
+ * on garde l'URL telle quelle (type hls + qualité déclarée).
+ */
+const MAX_MANIFEST_EXPANSIONS = 6;
+
+/** Nombre max de sondes HEAD de taille (mp4/mkv/webm sans size). */
+const MAX_SIZE_PROBES = 3;
+
+/**
+ * Requêtes d'enrichissement uniquement si `budgetDeadline` (timestamp absolu
+ * Date.now()) n'est pas dépassé — cf. createProvider.
+ */
+function isEnrichmentBudgetSpent(options) {
+    const deadline = Number(options && options.budgetDeadline);
+    return deadline > 0 && Date.now() > deadline;
+}
+
 export async function expandStreamQualities(streams, options = {}) {
     const input = Array.isArray(streams) ? streams : [];
     const expanded = [];
 
+    const manifestCap = Number(options.maxManifestFetches) > 0
+        ? Number(options.maxManifestFetches)
+        : MAX_MANIFEST_EXPANSIONS;
+    const skipManifests = options.skipManifestExpansion === true;
+    let manifestFetches = 0;
+
     const results = await Promise.allSettled(
-        input.map(stream => expandSingleStreamQualities(stream, options))
+        input.map(stream => {
+            const url = stream && typeof stream.url === 'string' ? stream.url : '';
+            const lower = url.toLowerCase();
+            const needsManifest = lower.includes('.m3u8') || lower.includes('/hls/');
+            if (!needsManifest) return expandSingleStreamQualities(stream, options);
+            if (skipManifests || isEnrichmentBudgetSpent(options) || manifestFetches >= manifestCap) {
+                return Promise.resolve([{
+                    ...stream,
+                    quality: normalizeQualityLabel((stream && stream.quality) || 'HD'),
+                    type: 'hls',
+                }]);
+            }
+            manifestFetches++;
+            return expandSingleStreamQualities(stream, options);
+        })
     );
     for (let i = 0; i < results.length; i++) {
         const r = results[i];
@@ -1199,10 +1274,11 @@ export async function expandStreamQualities(streams, options = {}) {
     // pour fournir la taille aux filtres/tri NuvioTV. Parallélisé, max 5 simultanées.
     // La taille est enrichie avec les métadonnées de qualité (codec, type) pour que
     // le champ description (= size dans Stream TV) aide le filtrage debrid.
-    const DIRECT_VIDEO_RE = /\.(mp4|mkv|webm)(\?.*)?$/i;
-    const streamsNeedingSize = sorted
-        .filter(s => !s.size && s.url && DIRECT_VIDEO_RE.test(s.url))
-        .slice(0, 5);
+    const directVideoRe = /\.(mp4|mkv|webm)(\?.*)?$/i;
+    const sizeProbeEnabled = options.sizeProbe !== false && !isEnrichmentBudgetSpent(options);
+    const streamsNeedingSize = sizeProbeEnabled
+        ? sorted.filter(s => !s.size && s.url && directVideoRe.test(s.url)).slice(0, MAX_SIZE_PROBES)
+        : [];
     if (streamsNeedingSize.length > 0) {
         const sizeResults = await Promise.allSettled(
             streamsNeedingSize.map(s => fetchVideoSize(s.url, s.headers))
@@ -1317,6 +1393,10 @@ export async function safeFetch(url, options = {}) {
         if (!response) return null;
 
         const status = response.status;
+        // Le bridge natif ne throw JAMAIS sur erreur réseau : il renvoie
+        // ok:false / status:0 / body vide. Sans ce garde-fou, un `if (!res)`
+        // de provider croit avoir une réponse valide (et parse du vide).
+        if (status === 0) return null;
         let bodyText = '';
         let truncated = false;
         try {
@@ -1329,7 +1409,7 @@ export async function safeFetch(url, options = {}) {
             if (rawText && rawText.endsWith(RUNTIME_TRUNCATION_SUFFIX)) {
                 truncated = true;
                 bodyText = rawText;
-            } else if (rawText && rawText.length > MAX_SAFE_FETCH_BODY_BYTES) {
+            } else if (rawText && rawText.length >= MAX_SAFE_FETCH_BODY_BYTES) {
                 truncated = true;
                 console.warn(`[safeFetch] Response truncated (${rawText.length} bytes > ${MAX_SAFE_FETCH_BODY_BYTES}): ${(url || '').slice(0, 100)}`);
                 bodyText = rawText.slice(0, MAX_SAFE_FETCH_BODY_BYTES);

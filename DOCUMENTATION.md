@@ -42,26 +42,36 @@ User taps content → PluginManager.executeScrapers()
 
 ### 1.2 Runtime Details
 
-| Aspect | Implementation |
-|---|---|
-| Engine | QuickJS via `com.dokar.quickjs:quickjs-kt` v1.0.5 |
-| Context lifecycle | Created per `executePlugin()` call, destroyed after completion |
-| Dispatcher | Inherits from caller (low-priority); fallback `Dispatchers.IO` |
-| Sandboxing | No filesystem, no `require()` except `cheerio`/`crypto-js`, no `import` |
-| Plugin timeout | 60 seconds (`PLUGIN_TIMEOUT_MS`) |
-| Scraper outer timeout | 120 seconds (`SCRAPER_TIMEOUT_MS`) |
-| Result capture | `__capture_result(jsonString)` stores result in local variable |
-| Default User-Agent | `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36` |
+| Aspect | NuvioTV | NuvioMobile |
+|---|---|---|
+| Engine | QuickJS via `quickjs-kt` **1.0.5** (AAR `-nuvio`) | QuickJS via `quickjs-kt` **1.0.15** |
+| Context lifecycle | Created per `executePlugin()` call, destroyed after completion (both) | same |
+| Dispatcher | Inherits caller (low-priority pool, 10 threads); fallback `Dispatchers.IO` | `pluginDispatcher`, 10 threads, `THREAD_PRIORITY_BACKGROUND` |
+| Sandboxing | No filesystem, no `require()` except `cheerio`/`crypto-js`, no `import` (both) | same |
+| Plugin timeout | 60 s coroutine (`PLUGIN_TIMEOUT_MS`), **plus** scraper outer 120 s (`SCRAPER_TIMEOUT_MS`) | 60 s coroutine **+** `evaluationTimeoutMillis = 60 s` |
+| **`fetch()` bridge** | **Synchronous / blocking** (`function("__native_fetch")`) → `Promise.all` runs **sequentially** | **Async** (`asyncFunction`) → real parallelism |
+| Timers (`setTimeout`/`setInterval`) | **Absent** | Polyfilled via `__plugin_sleep` (coroutine delay, capped 60 s) |
+| `TextEncoder`/`TextDecoder`, `crypto.subtle` | **Absent** | Polyfilled (native crypto bridge) |
+| Response body limit | 1 MB **bytes** (suffix only when > 1 M chars) | 1 MB bytes + suffix `\n...[truncated]` |
+| HTML parser | cheerio polyfill → **jsoup**, 8 docs cached | cheerio polyfill → **Ksoup**, 8 docs cached |
+| Result capture | `__capture_result(jsonString)` stores result in local variable | same |
+| Default User-Agent (injected if absent) | `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36` (short — often rejected by Cloudflare → always set your own) | same |
+
+> **⚠️ Conséquence n°1 : sur NuvioTV il n'y a AUCUNE parallélisation réseau.**
+> Le bridge `__native_fetch` bloque la pile JS : `Promise.all`, `fetchBatch()`,
+> `Promise.allSettled()` s'exécutent **en série**, et les `sleep()` attendent en
+> busy-wait microtask (CPU brûlé). Le budget se calcule donc en **somme des RTT**,
+> pas en RTT max. C'est le principal levier d'optimisation des providers.
 
 ### 1.3 Flavors
 
 | Flavor | Plugin Support | Package ID | OkHttp timeout | Response raw limit |
 |---|---|---|---|---|
-| `full` (NuvioTV) | Enabled | `com.nuvio.tv` | **30s** | **256 KB** |
+| `full` (NuvioTV) | Enabled | `com.nuvio.tv` | **30s** | **1 MB** (byte-capped) |
 | `full` (NuvioMobile) | Enabled | `com.nuvio.app` | **60s** | **1 MB** |
 | `playstore` (NuvioMobile) | Disabled (no-op stubs) | `com.nuvio.app` | N/A | N/A |
 
-**⚠️ Critical Difference:** NuvioTV has OkHttp timeouts **2x shorter** than NuvioMobile (30s vs. 60s). A provider whose HTTP requests take between 30s and 60s will succeed on Mobile but fail on TV. Providers must be designed to operate within the most restrictive window (30s per request, 60s total plugin).
+**⚠️ Critical Difference:** NuvioTV has OkHttp timeouts **2x shorter** than NuvioMobile (30s vs. 60s), **no JS timers** (so a plugin-side `withTimeout()`/`safeFetch({ timeout })` cannot bound a request) and a **blocking fetch bridge**. A request that hangs up to 30s will succeed on Mobile (bounded by our own race) but will silently consume 30s of the 60s plugin budget on TV. Providers must be designed for the TV window (30s per request, ~10s to be usable in auto-play, 60s total plugin).
 
 ---
 
@@ -87,9 +97,10 @@ User taps content → PluginManager.executeScrapers()
 | `globalThis.TMDB_API_KEY` | String — from BuildConfig |
 | `globalThis.global / window / self` | Aliases to `globalThis` |
 | `RegExp`, `JSON`, `Math`, `Date`, `Promise`, `async/await` | Native QuickJS |
-| `TextDecoder / TextEncoder` | **Not available** |
-| `setTimeout / setInterval` | **Not available** |
-| `Buffer`, `process` | **Not available** |
+| `TextDecoder / TextEncoder` | **TV: Not available** · **Mobile: polyfilled** |
+| `setTimeout / setInterval / clearTimeout` | **TV: Not available** · **Mobile: polyfilled** (coroutine delay, cap 60 s) |
+| `crypto.subtle` (WebCrypto) | **TV: Not available** · **Mobile: available** |
+| `Buffer`, `process` | **Not available** (both) |
 
 ### 2.2 Native Bridge Functions
 
@@ -112,28 +123,38 @@ These are called by polyfills, not directly by provider code:
 ### 2.3 `fetch()` Polyfill
 
 ```javascript
-async function fetch(url, options) {
-  var result = __native_fetch(url, method, JSON.stringify(headers), body);
+// NuvioTV — SYNCHRONE : l'appel natif bloque le thread JS jusqu'à la réponse
+var fetch = async function(url, options) {
+  var result = __native_fetch(url, method, JSON.stringify(headers), body.kind, body.value, followRedirects);
   var parsed = JSON.parse(result);
   return {
     ok: parsed.ok,
-    status: parsed.status,   // 0 if failed
+    status: parsed.status,   // 0 si échec réseau (jamais de throw)
     statusText: parsed.statusText,
+    url: parsed.url,         // URL finale après redirections
     headers: { get: function(name) { return parsed.headers[name.toLowerCase()] || null; } },
+    arrayBuffer: ...,
     text: function() { return Promise.resolve(parsed.body); },
     json: function() {
       try { return Promise.resolve(JSON.parse(parsed.body)); }
-      catch (e) { return Promise.resolve(null); }   // returns null on parse failure!
+      catch (e) { return Promise.resolve(null); }   // renvoie null, ne rejette pas
     }
   };
-}
+};
+
+// NuvioMobile — ASYNCHRONE : les requêtes se chevauchent réellement
+var result = await __native_fetch(url, method, /* … */);
 ```
 
-**Limitations:**
-- Response body truncated at **256 KB** (chars) — raw bytes limit varies : **256 KB** (NuvioTV) or **1 MB** (NuvioMobile)
-- Header values truncated at **8 KB**
+**Limitations (les deux apps) :**
+- Body tronqué à **1 MB** (octets) ; Mobile ajoute toujours le suffixe `\n...[truncated]`, TV seulement si le texte dépasse 1 M de caractères (corps multi-octets tronqué **sans** suffixe)
+- **Les en-têtes de réponse n'exposent QUE `headers.get(name)`** — `res.headers['content-type']` est **toujours `undefined`** (utiliser `getResponseHeader()` de `resolvers.js`)
+- Header values truncated at **8 KB** ; clés en minuscules sur les deux apps
+- **Erreur réseau ≠ throw** : `ok:false`, `status:0`, body vide → traiter `status === 0` comme un échec
 - No `response.body.getReader()`, `response.clone()`, `response.headers.entries()`
-- **No `AbortSignal.timeout()`** — timeouts passed to `safeFetch()` (e.g., `timeout: 15000`) are **ignored**. The only effective timeout per request is that of native OkHttp (30s TV, 60s Mobile).
+- **`AbortSignal.timeout()` est absent** (les deux apps) et le polyfill `AbortController` n'annule **pas** la requête en vol : le `timeout` de `safeFetch()` n'a d'effet que si le runtime a des **timers**
+  - **Mobile** : `setTimeout` existe → notre `Promise.race` (withTimeout) borne réellement
+  - **TV** : aucun timer → aucun timeout JS ; seul OkHttp (30 s) coupe. Un host muet peut donc consommer 30 s du budget
 - `response.json()` returns `null` (not rejected promise) on parse error
 
 ### 2.4 `cheerio` API
@@ -149,9 +170,14 @@ $('selector').map((i, el) => result) / .filter(fn) / .toArray()
 $.html() / $.html(element)
 ```
 
-**Limitations:**
+**Limitations (les deux apps — mêmes lacunes) :**
 - No DOM manipulation (`append`, `remove`, `addClass`, etc.)
 - `.parent()` always returns empty collection
+- **`.closest()`, `.hasClass()`, `.siblings()`, `.parents()`, `.nextAll()`, `.prevAll()`, `.is()`, `.not()`, `.add()` n'existent pas** → `TypeError`. Feature-détecter : `typeof $(el).closest === 'function'`
+- **`.filter('selector')` ne filtre RIEN** : seule la forme `.filter(function)` fonctionne (sinon la collection est renvoyée telle quelle — bug silencieux)
+- `.children()` = **`find('*')`** → tous les descendants, pas seulement les enfants directs
+- `.text()` sur plusieurs éléments les joint par un **espace** (cheerio natif : sans séparateur)
+- `.map()` renvoie un objet `{ length, get(i), toArray() }` (pas un tableau)
 - `:contains("text")` selectors work (quotes are transpiled for Jsoup)
 
 ### 2.5 Available `require()` Modules
@@ -170,16 +196,31 @@ $.html() / $.html(element)
 
 ```javascript
 /**
- * @param {string}  tmdbId     - TMDB ID (e.g. "550"). IMDb IDs are auto-resolved.
- * @param {string}  mediaType  - "movie" or "tv". "series"/"show" normalized to "tv".
- * @param {number}  [season]   - 1-based, null/undefined for movies
- * @param {number}  [episode]  - 1-based, null/undefined for movies
+ * @param {string}  tmdbId     - TMDB ID (e.g. "550"). Voir « formats d'ID » ci-dessous.
+ * @param {string}  mediaType  - "movie" ou "tv". "series"/"show" sont normalisés en "tv".
+ * @param {number}  [season]   - 1-based ; **null pour un épisode ABSOLU** (anime)
+ * @param {number}  [episode]  - 1-based, null/undefined pour un film
  * @returns {Promise<Array>}   - Array of stream objects
  */
 async function getStreams(tmdbId, mediaType, season, episode) {
   // ... your logic ...
 }
 ```
+
+#### Formats d'ID réellement reçus
+
+| Entrée | Fréquence | Traitement |
+|---|---|---|
+| `"550"` (TMDB numérique) | cas normal | — |
+| `"kitsu:6448"` / `"kitsu:6448:68"` | anime sans ID TMDB | résolu via l'API Kitsu (`getTmdbTitles`) |
+| `"mal:40748"`, `"anilist:113415"` | anime (trackers) | résolu via AniList → TMDB (UA non-navigateur requis, cf. §9) |
+| `"anidb:…"`, `"tvdb:…"` | rare | **non résolvable → échec rapide** (aucune requête TMDB) |
+| `"tt0245429"` | IMDb non convertible par l'app | résolu via TMDB `/find?external_source=imdb_id` |
+| `"tmdb:129"`, `"movie:129"` | préfixé (défensif) | préfixe retiré |
+
+**Épisodes absolus :** pour un ID traceur (`kitsu:`/`mal:`/…), NuvioTV envoie
+`season = null` et le numéro d'épisode absolu (`kitsu:6448:68` → `episode = 68`)
+— gérer explicitement `season == null` (listes d'épisodes à plat, une seule saison).
 
 May be exported as `module.exports.getStreams` (CommonJS) or defined as a global function `function getStreams(...)`. Both are detected at runtime.
 
@@ -207,6 +248,54 @@ May be exported as `module.exports.getStreams` (CommonJS) or defined as a global
 ```
 
 **Required:** `url` only (non-blank, must not contain "[object").
+
+#### `size` — le parseur réel de l'app (vérifié dans le code source)
+
+**NuvioTV lit le champ `size` depuis le texte, pas depuis un champ structuré.** Le
+chemin réel (code app vérifié) :
+
+1. `PluginRuntime.parseJsonResults()` lit `item.size` **en chaîne** (`LocalScraperResult.size: String?`) — aucun champ numérique n'est lu côté plugin.
+2. `StreamRepositoryImpl.buildDescription()` construit le `description` du stream : `size • language` (la `quality` va dans le **nom** du stream, pas dans la description).
+3. `StreamTextSizeParser.effectiveSizeBytes(stream)` résout la taille par cette chaîne de priorité :
+   `clientResolve.stream.raw.size` → `behaviorHints.videoSize` → `debridCacheStatus.cachedSize` → **texte de `description`, puis `title`, puis `name`**.
+   Pour un stream de plugin, seul le 4ᵉ maillon est atteint → c'est notre chaîne `"size • language"` qui est parsée.
+4. Le parseur (Kotlin) est :
+
+   ```kotlin
+   // NuvioTV — core/debrid/StreamTextSizeParser.kt
+   private val SIZE_REGEX = Regex(
+       """(\d+(?:[.,]\d+)?)\s*(TB|GB|MB|KB)\b""",
+       RegexOption.IGNORE_CASE
+   )
+   ```
+
+   Équivalent JS : `/(\d+(?:[.,]\d+)?)\s*(TB|GB|MB|KB)\b/i` — **sans ancrage**, comme `Regex.find()` en
+   Kotlin : `text.match(re)` renvoie le **premier match** où qu'il apparaisse. La valeur est alors multipliée
+   par `1024^4|3|2|1` (TB/GB/MB/KB, base **1024**, pas 1000), convertie en `Long`, et **rejetée si `<= 0`**
+   (ex. `formatSizeBytes(1)` → `"0 KB"` → parsé à 0 → taille ignorée).
+
+**Conséquences pratiques :**
+
+| Règle | Détail |
+|---|---|
+| Décimales acceptées | `.` **et** `,` — `"3.55 GB"`, `"2,4 GB"` et `"1.81GB"` (sans espace) marchent |
+| Casse | indifférente (`gb`, `Gb`, `GB`) |
+| Espaces | optionnels : `"512KB"` = `"512 KB"` |
+| Unités limitées | `TB\|GB\|MB\|KB` uniquement : `"256 MB"` ok, `"0.3 GB"` ok, mais `"256 MiB"`, `"256 Mo"`, `"1 Go"` → **non parsable** |
+| `\b` après l'unité | le texte doit s'arrêter juste après l'unité : `"320kbps"` (kb suivi de ps), `"2160p"`, `"x265.10bit"` **ne matchent pas** |
+| **Premier match gagne** | si un autre nombre+unité apparaît **avant** la taille dans `description`/`title`/`name`, c'est lui qui est lu |
+| `quality` n'est jamais parsée | la `quality` va dans le **nom** du stream sur TV ; seul `description`→`title`→`name` l'est |
+
+Cas des tests officiels de l'app (`StreamTextSizeParserTest.kt`) : `"👤 12 💾 1.81 GB ⚙️ TPB"` → 1.81 GiB,
+`"💾 2,4 GB"` → 2.4 GiB, `"512KB"` → 512 KiB, `"1.5 TB"` → 1.5 TiB ; rejetés : `"Movie.2024.2160p.x265.10bit"`, `"audio 320kbps AAC"`.
+
+**NuvioMobile ne parse PAS `size`** : `PluginRuntimeResult.toStreamItem()` le place tel quel
+au sous-titre (`description = "quality • size • language"`), et le badge de taille
+(`StreamFileSizeBadge`, réglable) n'affiche que `behaviorHints.videoSize` **en octets**,
+qu'un plugin ne peut pas fournir. Donc `size` sert à l'affichage Mobile **et au tri/filtre TV** —
+un format parsable n'est pas cosmétique, c'est la condition pour que le tri par taille de
+NuvioTV fonctionne. Le helper `formatSizeBytes(bytes)` de `resolvers.js` (appelé par
+`fetchVideoSize()`) produit déjà ce format (`"1.4 GB"`, décimale `.`) ; voir §9 (audit `size`).
 
 > **💡 `toStream()` injecte `name` automatiquement**
 >
@@ -402,14 +491,20 @@ Logcat filter: `adb logcat -s "Plugin:*"`
 
 | Limit | NuvioTV (full) | NuvioMobile (full) | Source |
 |---|---|---|---|
-| JS plugin execution | **60s** | **60s** | `PluginRuntime.kt` |
+| JS plugin execution | **60s** | **60s** (+ `evaluationTimeoutMillis`) | `PluginRuntime.kt` |
 | Full scraper lifecycle | **120s** | N/A | `PluginManager.kt` |
 | HTTP connect / read / write | **30s each** | **60s each** | `PluginRuntime.kt` / `AddonPlatform` |
+| Auto-play (default) | **10s** → au-delà, provider invisible en lecture auto | dépend du réglage utilisateur | `PlayerSettingsDataStore.kt` |
 
-**Consequence:** NuvioTV has a budget of **30 seconds per HTTP request** compared to **60 seconds** on mobile. The `AbortSignal.timeout()` timeouts passed in `safeFetch()` are ignored in QuickJS (see §2.3). The only effective timeout per call is that of native OkHttp. To avoid exceeding the `PLUGIN_TIMEOUT_MS` (60 seconds), you must:
-- Parallelize HTTP requests with `Promise.allSettled`
-- Avoid long sequential fallback chains
-- Use HEAD requests to test URLs before GET requests
+**Consequence:** NuvioTV a **30 s max par requête** (vs 60 s sur mobile), **aucun timer JS**
+(donc aucun timeout côté plugin : ni `safeFetch({timeout})` ni `withTimeout()`),
+et un **bridge fetch bloquant** (donc aucune parallélisation). Pour rester sous les
+60 s de `PLUGIN_TIMEOUT_MS` — sachant qu'à l'expiration le résultat est **jeté** — il faut :
+- **Minimiser le nombre de requêtes** (le temps total = somme des RTT sur TV) — c'est le seul vrai levier
+- Sortir **tôt avec du partiel** dès qu'on a des streams (`isBudgetExhausted(startTime, TV_BUDGET_MS)` avant chaque étape réseau)
+- Éviter les enrichissements optionnels quand le budget est entamé (`expandStreamQualities` reçoit `budgetDeadline` et cesse alors toute requête non essentielle : expansion HLS, sondes de taille)
+- Éviter les sondes HEAD (une sonde non bornée peut coûter 30 s pour une étiquette de taille : `fetchVideoSize()` retourne `null` sans timers)
+- `fetchBatch()` / `Promise.allSettled()` **n'apportent aucune parallélisation sur TV** (utile côté Mobile uniquement)
 
 ### 6.2 Network
 
@@ -511,6 +606,8 @@ async function getStreams(tmdbId, mediaType, season, episode) {
 
 ```javascript
 async function getStreams(tmdbId, mediaType, season, episode) {
+  // ⚠️ Sur NuvioTV ce code est SÉQUENTIEL (bridge fetch bloquant) : le résultat
+  // est correct mais le temps = somme des RTT. Garder le nombre de requêtes bas.
   const results = await Promise.allSettled(
     ['https://api1.example.com', 'https://api2.example.com'].map(async (base) => {
       const resp = await fetch(`${base}/stream/${tmdbId}`, {
@@ -523,6 +620,9 @@ async function getStreams(tmdbId, mediaType, season, episode) {
   return results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
 }
 ```
+
+Pour un vrai contrôle de débit/anti-burst, préférer `fetchBatch()` (concurrency,
+`stopOnFirst`, `staggerMs`) — gain réel sur Mobile, neutre (mais inoffensif) sur TV.
 
 ### With settings access
 
@@ -569,7 +669,13 @@ Helpers disponibles dans `src/utils/resolvers.js` :
 |---|---|
 | `getScraperSettings()` | Réglages injectés par l'app (`globalThis.SCRAPER_SETTINGS`, `{}` par défaut) |
 | `createSettingsLayout(items)` | Déclare le hook `onSettings()` (UI NuvioMobile) |
-| `fetchBatch(requests, fetchFn, { concurrency, stopOnFirst, staggerMs })` | Fetch parallèle borné ; `staggerMs` espace les départs de requêtes (anti-burst Cloudflare) |
+| `fetchBatch(requests, fetchFn, { concurrency, stopOnFirst, staggerMs })` | Fetch parallèle borné (parallèle = NuvioMobile seulement) ; `staggerMs` espace les départs de requêtes (anti-burst Cloudflare) |
+| `sleep(ms)` / `HAS_NATIVE_TIMERS` | Délai portable (timers Mobile, busy-wait TV) — `HAS_NATIVE_TIMERS` permet de savoir si on peut borner une requête |
+| `fetchVideoSize(url, headers)` | Taille via HEAD — **retourne `null` sans timers** (TV) pour ne pas risquer 30 s sur une étiquette cosmétique |
+| `isBudgetExhausted(startTime, budgetMs)` / `TV_BUDGET_MS` | Garde-fou budget : sortir avec du partiel plutôt que de risquer le 60 s qui jette tout |
+| `getResponseHeader(headers, name)` | Lit un en-tête quel que soit le conteneur (`Headers.get()` ou objet du cache) |
+| `normalizeLanguageCode(raw)` | Code langue compris par les filtres des apps (`fr`/`en`/`ja`/`multi`) — c'est ce champ qui rend le filtre FR opérationnel |
+| `expandStreamQualities(streams, opts)` | Dédup URL+langue, type déduit, variants HLS. Options : `budgetDeadline`, `maxManifestFetches`, `skipManifestExpansion`, `sizeProbe`, `preferredCodec` |
 | `createProvider(name, extractFn, { maxStreams, timeout, quality })` | Wrapper standard : timeout, dédup URL+langue, filtre `[object`, cap `MAX_STREAMS_PER_PROVIDER` (80), expansion qualité |
 | `BUILD_ID` | Hash court injecté à la build (visible en logs : `[Name] Request: … (build abc12345)`) |
 
@@ -577,13 +683,37 @@ Helpers disponibles dans `src/utils/resolvers.js` :
 
 ## 9. Common Pitfalls
 
-**`setTimeout` / `setInterval` not available.** Use a busy-wait Promise-based delay (blocks the JS thread):
+**`setTimeout` / `setInterval` not available (NuvioTV only).** Utiliser `sleep(ms)` de
+`resolvers.js`, qui choisit automatiquement : `setTimeout` si le runtime en a
+(**NuvioMobile** → délai réel, zéro CPU), sinon busy-wait microtask (**NuvioTV** —
+seule option, mais il brûle du CPU pendant toute la durée → à éviter absolument sur
+le chemin critique : un backoff de 5 s = 5 s de spin).
 ```javascript
-const delay = ms => new Promise(resolve => {
-  const start = Date.now();
-  (function check() { if (Date.now() - start >= ms) resolve(); else check(); })();
-});
+import { sleep, HAS_NATIVE_TIMERS } from '../utils/resolvers.js';
+await sleep(800); // portable
 ```
+
+**Accès aux en-têtes de réponse.** La réponse ne fournit que `headers.get(name)` :
+```javascript
+const ctype = res.headers.get('content-type');        // ✅
+const bad = res.headers['content-type'];              // ❌ toujours undefined
+```
+Pour le cache interne (objet plain) et les deux formes, utiliser `getResponseHeader(res.headers, name)`
+(exporté par `resolvers.js`).
+
+**Échec réseau ≠ exception.** `fetch()` résout toujours : tester `res.ok` **et**
+`res.status === 0` (échec réseau renvoyé par le bridge). `safeFetch()` normalise
+`status === 0` en `null` — garder les `if (!res) return ...`.
+
+**Cloudflare vs UA navigateur.** Un UA Chrome complet est rejeté (403 « Just a
+moment… ») par certains endpoints protégés — vérifié sur `https://graphql.anilist.co`,
+qui répond **200 avec un UA court** (`Nuvio-Providers/1.0`, `okhttp/…`, même
+`Mozilla/5.0`). Toujours surcharger le UA par requête dans ce cas
+(`safeFetch` fusionne `BASE_HEADERS` avant `rest.headers`, donc l'override gagne).
+
+**Ne jamais manipuler un objet `URL` avant de fetcher.** `new URL(u).searchParams.set(...)`
+ne met **pas** à jour `.href` dans le polyfill, et passer un objet à `fetch()` dépend
+du `toString()` du bridge. Construire la chaîne finale explicitement.
 
 **`response.json()` returns `null` on failed parse** instead of rejecting. Always guard:
 ```javascript
@@ -591,7 +721,11 @@ const data = await resp.json();
 if (!data) return [];
 ```
 
-**fetch body truncated at 256 KB.** The response is silently truncated with `...[truncated]`. cheerio receives the already-truncated string.
+**Body truncated at 1 MB.** Le runtime coupe à 1 MB d'octets. Mobile ajoute le
+suffixe `\n...[truncated]` (détecté par `isTruncatedBody()`), **TV ne l'ajoute que
+si le texte dépasse 1 M de caractères** — un corps multi-octets tronqué côté TV peut
+donc passer inaperçu. `safeFetch()` refuse un HTML tronqué (return `null`) plutôt que
+de parser un préfixe ; ne jamais parser un body tronqué avec cheerio.
 
 **`require('unknown-module')` throws.** Bundle all dependencies with esbuild `bundle: true`. Only `cheerio` and `crypto-js` are available at runtime.
 
@@ -604,12 +738,16 @@ par `toStream()` dans `src/utils/dle-extractor.js`. Un grep `name:` restreint à
 vérifier aussi `src/utils/dle-extractor.js` (fonction `toStream`) et `resolveStream()`
 (resolvers.js) qui préserve `name` par spreads `{ ...stream }`. À l'inverse, `size` n'est
 jamais injecté par `toStream()` : si un site ne l'expose pas, l'omettre plutôt que de
-faire un HEAD request par stream (coût/budget).
+faire un HEAD request par stream (coût/budget). Voir §3.2 (« `size` — le parseur réel de l'app »)
+pour la regex exacte lue par NuvioTV : décimales `.`/`,` acceptées, base 1024, **premier match**
+dans `description` puis `title` puis `name` — un `"2 Go"` ou un `"320kbps"` positionné avant
+la taille dans le même texte le fait échouer silencieusement (taille absente du tri/filtre).
 
 **V8 vs QuickJS differences:**
-- `TextDecoder`/`TextEncoder` unavailable
+- `TextDecoder`/`TextEncoder` unavailable **on TV** (available on Mobile)
 - `RegExp` lookbehind may differ
-- No `Buffer`, `process`, `setImmediate`
+- No `Buffer`, `process`, `setImmediate` (sur les deux)
+- Pas de `Array.prototype.at`, `findLast`, `Object.groupBy`, `structuredClone` (polyfills fournis : `flat`, `flatMap`, `Object.entries`, `Object.fromEntries`, `String.replaceAll`)
 - `Error.stack` format differs
 - Always test in-app
 
