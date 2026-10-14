@@ -1,13 +1,13 @@
 # 🚀 Nuvio French Providers Bundle
 
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-1.2.3-green.svg)](manifest.json)
+[![Version](https://img.shields.io/badge/version-1.2.4-green.svg)](manifest.json)
 [![Providers](https://img.shields.io/badge/providers-37-brightgreen.svg)](manifest.json)
 [![Runtime](https://img.shields.io/badge/runtime-QuickJS-orange.svg)](#-quickjs-runtime)
 
 An optimized collection of French streaming plugins for the **Nuvio** app. This bundle covers anime (VF/VOSTFR), movies and series with a direct-link resolution system for smooth playback on mobile **and TV**.
 
-> Versions and formats in this document are synchronized with [`manifest.json`](manifest.json) (repo **1.2.3**).
+> Versions and formats in this document are synchronized with [`manifest.json`](manifest.json) (repo **1.2.4**).
 
 ---
 

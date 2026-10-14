@@ -6,6 +6,25 @@
 const TMDB_API_KEY = "8265bd1679663a7ea12ac168da84d2e8";
 const TMDB_API_BASE = "https://api.themoviedb.org/3";
 
+/** Budget total des appels TMDB par titre (ms) — plafond dur, cf. fetchTmdb. */
+const METADATA_BUDGET_MS = 20000;
+/**
+ * Budget restant minimum pour l'appel `translations` — celui qui fournit le
+ * **titre FR** (priorité 1 après le main, indispensable aux sites FR).
+ */
+const METADATA_TRANS_MIN_MS = 4000;
+/**
+ * Budget restant minimum pour l'appel `alternative_titles` (bonus) ET pour
+ * lancer les deux en parallèle. Sur NuvioTV ils s'exécutent de toute façon en
+ * SÉRIE (fetch bloquant) : 2 RTT sur le chemin critique.
+ */
+const METADATA_ALT_MIN_MS = 8000;
+/**
+ * UA applicatif court utilisé UNIQUEMENT pour l'API AniList (voir aniListMedia) :
+ * un UA Chrome complet y déclenche un challenge Cloudflare 403.
+ */
+const ANILIST_USER_AGENT = 'Nuvio-Providers/1.0';
+
 import { safeFetch, sleep } from './resolvers.js';
 
 /**
@@ -81,6 +100,108 @@ function isLatinText(str) {
 function parseKitsuId(id) {
     const strId = String(id);
     return strId.match(/^kitsu:(\d+)(?::(\d+))?$/);
+}
+
+/**
+ * Ids traceurs non-TMDB que les apps peuvent passer à getStreams() :
+ * `mal:63375`, `anilist:12345`, `anidb:6789` (+ suffixe d'épisode absolu
+ * éventuel conservé par l'app sur NuvioTV).
+ * TMDB ne les connaît pas : sans résolution, les 3 endpoints TMDB renvoient
+ * 404 et le provider finissait avec 0 titre → 0 stream.
+ * @param {string} id
+ * @returns {{tracker: string, externalId: string, absEpisode: number|null}|null}
+ */
+function parseTrackerId(id) {
+    const match = String(id || '').match(/^(mal|anilist|anidb|tvdb):(\d+)(?::(\d+))?$/i);
+    if (!match) return null;
+    return {
+        tracker: match[1].toLowerCase(),
+        externalId: match[2],
+        absEpisode: match[3] ? parseInt(match[3], 10) : null,
+    };
+}
+
+/**
+ * Résout un id traceur via l'API publique AniList (GraphQL, sans clé API).
+ * anidb/tvdb ne sont pas couverts (pas d'API simple) → null (échec rapide).
+ * @returns {Promise<{idMal: number, title: {romaji?: string, english?: string, native?: string}}|null>}
+ */
+async function aniListMedia(tracker) {
+    if (!tracker || tracker.tracker === 'anidb' || tracker.tracker === 'tvdb') return null;
+    const isAniList = tracker.tracker === 'anilist';
+    const query = isAniList
+        ? 'query($id: Int){Media(id: $id, type: ANIME){idMal title{romaji english native}}}'
+        : 'query($idMal: Int){Media(idMal: $idMal, type: ANIME){idMal title{romaji english native}}}';
+    const variables = isAniList
+        ? { id: Number(tracker.externalId) }
+        : { idMal: Number(tracker.externalId) };
+    if (!Number.isFinite(variables.id ?? variables.idMal)) return null;
+    try {
+        // ⚠️ UA volontairement NON-navigateur : Cloudflare (devant AniList)
+        // renvoie un challenge 403 « Just a moment… » au UA Chrome complet,
+        // mais 200 avec un UA applicatif court (vérifié). safeFetch fusionne
+        // BASE_HEADERS avant rest.headers → cet override gagne.
+        const res = await safeFetch('https://graphql.anilist.co', {
+            method: 'POST',
+            headers: {
+                'User-Agent': ANILIST_USER_AGENT,
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+            },
+            body: JSON.stringify({ query, variables }),
+            // Timeout court : AniList est derrière Cloudflare, un challenge 403
+            // répond vite — inutile de brûler du budget TV pour un id annexe.
+            timeout: 6000,
+        });
+        if (!res || !res.ok) return null;
+        let data = null;
+        try { data = await res.json(); } catch (e) { return null; }
+        return data && data.data && data.data.Media ? data.data.Media : null;
+    } catch (e) {
+        return null;
+    }
+}
+
+/**
+ * Titres exploitables pour un id traceur : AniList → titre → TMDB (pour
+ * récupérer le jeu de titres standard + les métadonnées anime), sinon repli
+ * sur les titres AniList bruts.
+ */
+async function trackerTitles(tracker, mediaType, opts) {
+    const media = await aniListMedia(tracker);
+    if (!media || !media.title) {
+        console.warn(`[Metadata] Tracker ${tracker.tracker}:${tracker.externalId} non résolu (0 requête TMDB dépensée)`);
+        return [];
+    }
+    const candidates = [media.title.english, media.title.romaji, media.title.native]
+        .map(t => (t || '').trim())
+        .filter(Boolean);
+    for (const candidate of candidates) {
+        const tmdbId = await searchTmdbByTitle(candidate, mediaType);
+        if (!tmdbId) continue;
+        const titles = await getTMDBTitlesById(String(tmdbId), mediaType, opts);
+        if (titles && titles.length > 0) {
+            console.log(`[Metadata] ${tracker.tracker}:${tracker.externalId} → TMDB ${tmdbId} via "${candidate}"`);
+            return titles;
+        }
+    }
+    console.log(`[Metadata] AniList titles used directly for ${tracker.tracker}:${tracker.externalId}`);
+    return candidates;
+}
+
+/**
+ * Résout un IMDb ID (tt1234567) en TMDB ID via /find (pas de 404 systématique).
+ */
+async function resolveImdbToTmdb(imdbId, mediaType) {
+    if (!/^tt\d+$/i.test(imdbId)) return null;
+    const url = `${TMDB_API_BASE}/find/${imdbId}?api_key=${TMDB_API_KEY}&external_source=imdb_id`;
+    const res = await fetchTmdb(url, 1);
+    if (!res) return null;
+    let data = null;
+    try { data = await res.json(); } catch (e) { return null; }
+    const list = (mediaType === 'movie' ? data && data.movie_results : data && data.tv_results) || [];
+    const first = list[0];
+    return first && first.id ? String(first.id) : null;
 }
 
 /**
@@ -238,14 +359,27 @@ async function getTMDBTitlesById(tmdbId, mediaType, opts = {}) {
         // Budget metadata serré : les 3 endpoints sont appelés SÉQUENTIELLEMENT
         // sur NuvioTV (fetch synchrone) — au-delà de ~20s ici, le provider
         // n'a plus le temps de scraper → on livre ce qu'on a.
-        const deadline = Date.now() + 20000;
+        const deadline = Date.now() + METADATA_BUDGET_MS;
         // mainRes d'abord (priorité) : titres EN/original + métadonnées + saisons
         const mainRes = await fetchTmdb(mainUrl, 2, deadline);
-        // alt/trans = enrichissements : 1 seule tentative chacun, best-effort
-        const [altRes, transRes] = await Promise.all([
-            fetchTmdb(altUrl, 1, deadline),
-            fetchTmdb(transUrl, 1, deadline)
-        ]);
+        // alt/trans = enrichissements : 1 seule tentative chacun, best-effort.
+        // ⚠️ Sur NuvioTV ils s'exécutent SÉQUENTIELLEMENT (fetch bloquant) :
+        // 2 RTT de plus sur le chemin critique pour des titres secondaires.
+        // On les saute si le budget restant est trop court (ou opts.allowEnrichment=false).
+        const remaining = () => deadline - Date.now();
+        const enrichAllowed = opts.allowEnrichment !== false;
+        let altRes = null;
+        let transRes = null;
+        if (enrichAllowed && remaining() > METADATA_ALT_MIN_MS) {
+            // Budget confortable : les deux (réellement parallèle sur Mobile).
+            [altRes, transRes] = await Promise.all([
+                fetchTmdb(altUrl, 1, deadline),
+                fetchTmdb(transUrl, 1, deadline)
+            ]);
+        } else if (enrichAllowed && remaining() > METADATA_TRANS_MIN_MS) {
+            // Budget juste : on garde LA priorité, le titre FR.
+            transRes = await fetchTmdb(transUrl, 1, deadline);
+        }
 
         if (mainRes) {
             const mainJson = await mainRes.json();
@@ -448,10 +582,14 @@ async function kitsuSearchFallback(tmdbName, mediaType, opts) {
  * @returns {Promise<string[]>}
  */
 export async function getTmdbTitles(id, mediaType, opts = {}) {
-    const kitsuMatch = parseKitsuId(id);
+    // Certaines apps passent l'id préfixé (`tmdb:129`, `tmdb/129`, `movie:129`).
+    const strId = (id == null ? '' : String(id).trim())
+        .replace(/^tmdb[:/]/i, '')
+        .replace(/^(?:movie|series)[:/]/i, '');
+    const kitsuMatch = parseKitsuId(strId);
     let effectiveSeason = opts.season != null ? opts.season : null;
 
-    console.log(`[Metadata] getTmdbTitles: id="${id}" type="${mediaType}" season=${opts.season}`);
+    console.log(`[Metadata] getTmdbTitles: id="${strId}" type="${mediaType}" season=${opts.season}`);
 
     // Si l'ID est un Kitsu ID, le traiter directement
     if (kitsuMatch) {
@@ -465,22 +603,50 @@ export async function getTmdbTitles(id, mediaType, opts = {}) {
     }
 
     // Gérer les IDs null/undefined/empty
-    if (!id) {
+    if (!strId) {
         console.error(`[Metadata] Invalid/null TMDB ID received: "${id}"`);
         const emptyTitles = [];
         emptyTitles.effectiveSeason = effectiveSeason;
         return emptyTitles;
     }
 
+    // IDs traceurs (mal/anilist/anidb/tvdb) : TMDB ne les connaît pas, on passe
+    // par AniList. Sans cette branche, 3 requêtes TMDB en 404 et 0 titre.
+    const tracker = parseTrackerId(strId);
+    if (tracker) {
+        if (opts.season == null && tracker.absEpisode != null) {
+            effectiveSeason = tracker.absEpisode;
+        }
+        const titles = await trackerTitles(tracker, mediaType, { ...opts, season: effectiveSeason });
+        titles.effectiveSeason = effectiveSeason;
+        return titles;
+    }
+
+    // ID ni numérique ni traceur : seul `tt…` est résoluble (TMDB /find).
+    // Sinon échec RAPIDE, sans dépenser une seule requête TMDB.
+    let contentId = strId;
+    if (!/^\d+$/.test(strId)) {
+        const imdbId = /^tt\d+$/i.test(strId) ? strId : (/^imdb:/i.test(strId) ? strId.slice(5) : null);
+        const resolved = imdbId ? await resolveImdbToTmdb(imdbId, mediaType) : null;
+        if (!resolved) {
+            console.warn(`[Metadata] ID non-TMDB non résolu: "${strId}" → aucun titre (échec rapide, 0 requête TMDB)`);
+            const emptyTitles = [];
+            emptyTitles.effectiveSeason = effectiveSeason;
+            return emptyTitles;
+        }
+        console.log(`[Metadata] ID ${strId} → TMDB ${resolved}`);
+        contentId = resolved;
+    }
+
     // Obtenir les titres TMDB par ID (les métadonnées sont intégrées, pas de fetch supplémentaire)
-    const titles = await getTMDBTitlesById(id, mediaType, opts);
+    const titles = await getTMDBTitlesById(contentId, mediaType, opts);
 
     // Validation intégrée via les métadonnées attachées par getTMDBTitlesById
     if (mediaType === 'tv' && titles.length > 0 && titles._metadata) {
         const meta = titles._metadata;
         
         if (!meta.isAnime) {
-            console.warn(`[Metadata] ⚠ ID ${id} = "${meta.name}" (${meta.originalLanguage}) - not anime!`);
+            console.warn(`[Metadata] ⚠ ID ${contentId} = "${meta.name}" (${meta.originalLanguage}) - not anime!`);
             
             // Fallback Kitsu uniquement si le contenu a des caractéristiques anime
             // (langue originale japonaise ou présence de caractères japonais dans le nom)
@@ -500,7 +666,7 @@ export async function getTmdbTitles(id, mediaType, opts = {}) {
                 console.log(`[Metadata] No anime indicators, skipping Kitsu fallback for "${meta.name}"`);
             }
         } else {
-            console.log(`[Metadata] ✓ ID ${id}: "${meta.name}" confirmed anime (${meta.originalLanguage})`);
+            console.log(`[Metadata] ✓ ID ${contentId}: "${meta.name}" confirmed anime (${meta.originalLanguage})`);
         }
     }
 
