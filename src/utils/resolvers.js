@@ -92,7 +92,7 @@ const HAS_NATIVE_CRYPTO = typeof crypto !== 'undefined' &&
 
 // Node.js crypto module (available in test/dev, not in QuickJS)
 let _nodeCrypto = null;
-try { _nodeCrypto = require('crypto'); } catch (_) {}
+try { _nodeCrypto = require('crypto'); } catch (_) { }
 const HAS_NODE_CRYPTO = !!_nodeCrypto;
 
 /**
@@ -282,15 +282,15 @@ export const HAS_NATIVE_TIMERS = typeof setTimeout === 'function';
  * À utiliser dans tous les providers plutôt que de dupliquer.
  */
 export function sleep(ms) {
-  const delay = Number(ms) > 0 ? Number(ms) : 0;
-  if (HAS_NATIVE_TIMERS) {
-    return new Promise(resolve => { setTimeout(resolve, delay); });
-  }
-  const target = Date.now() + delay;
-  return new Promise(resolve => {
-    const check = () => Date.now() >= target ? resolve() : Promise.resolve().then(check);
-    check();
-  });
+    const delay = Number(ms) > 0 ? Number(ms) : 0;
+    if (HAS_NATIVE_TIMERS) {
+        return new Promise(resolve => { setTimeout(resolve, delay); });
+    }
+    const target = Date.now() + delay;
+    return new Promise(resolve => {
+        const check = () => Date.now() >= target ? resolve() : Promise.resolve().then(check);
+        check();
+    });
 }
 
 /**
@@ -308,21 +308,21 @@ export function sleep(ms) {
  * @returns {Function} rateLimit(domain) → Promise qui résout quand on peut envoyer
  */
 export function createRateLimiter(baseDelay = 1000, jitterPercent = 0.3) {
-  const lastRequest = new Map();
+    const lastRequest = new Map();
 
-  return async function rateLimit(domain) {
-    const now = Date.now();
-    const last = lastRequest.get(domain) || 0;
-    const elapsed = now - last;
-    const jitter = baseDelay * jitterPercent * (Math.random() * 2 - 1); // +/- jitterPercent
-    const delay = Math.max(0, baseDelay + jitter - elapsed);
+    return async function rateLimit(domain) {
+        const now = Date.now();
+        const last = lastRequest.get(domain) || 0;
+        const elapsed = now - last;
+        const jitter = baseDelay * jitterPercent * (Math.random() * 2 - 1); // +/- jitterPercent
+        const delay = Math.max(0, baseDelay + jitter - elapsed);
 
-    if (delay > 0) {
-      await sleep(delay);
-    }
+        if (delay > 0) {
+            await sleep(delay);
+        }
 
-    lastRequest.set(domain, Date.now());
-  };
+        lastRequest.set(domain, Date.now());
+    };
 }
 
 /**
@@ -339,7 +339,7 @@ export function createRateLimiter(baseDelay = 1000, jitterPercent = 0.3) {
  * @returns {Function} rateLimit(domain) → Promise
  */
 export function createProviderRateLimiter(baseDelay = 200, jitterPercent = 0.4) {
-  return createRateLimiter(baseDelay, jitterPercent);
+    return createRateLimiter(baseDelay, jitterPercent);
 }
 
 /**
@@ -351,21 +351,21 @@ export function createProviderRateLimiter(baseDelay = 200, jitterPercent = 0.4) 
  * @returns {Promise<string>} Résultat du fetch
  */
 export async function fetchWithRetry(fetchFn, opts = {}) {
-  const retries = opts.retries ?? 2;
-  const delays = opts.delays ?? RETRY_DELAYS;
-  let lastError;
-  for (let i = 0; i <= retries; i++) {
-    try {
-      return await fetchFn();
-    } catch (err) {
-      lastError = err;
-      // Ne pas retry les 4xx sauf 429
-      if (err.message && /HTTP error 4(?:0[0-9]|1[0-79]|29)/.test(err.message)) throw err;
-      if (i === retries) throw err;
-      if (delays[i]) await sleep(delays[i]);
+    const retries = opts.retries ?? 2;
+    const delays = opts.delays ?? RETRY_DELAYS;
+    let lastError;
+    for (let i = 0; i <= retries; i++) {
+        try {
+            return await fetchFn();
+        } catch (err) {
+            lastError = err;
+            // Ne pas retry les 4xx sauf 429
+            if (err.message && /HTTP error 4(?:0[0-9]|1[0-79]|29)/.test(err.message)) throw err;
+            if (i === retries) throw err;
+            if (delays[i]) await sleep(delays[i]);
+        }
     }
-  }
-  throw lastError;
+    throw lastError;
 }
 
 /**
@@ -387,55 +387,55 @@ export async function fetchWithRetry(fetchFn, opts = {}) {
  * @returns {Promise<Array<{url: string, result: object|null, error: Error|null}>>}
  */
 export async function fetchBatch(requests, fetchFn, opts = {}) {
-  const concurrency = opts.concurrency ?? 5;
-  const stopOnFirst = opts.stopOnFirst ?? false;
-  const staggerMs = opts.staggerMs ?? 0;
-  const results = new Array(requests.length).fill(null);
-  let completedCount = 0;
-  let firstSuccess = null;
-  let idx = 0;
-  let lastStart = 0; // Date de début de la dernière requête lancée
+    const concurrency = opts.concurrency ?? 5;
+    const stopOnFirst = opts.stopOnFirst ?? false;
+    const staggerMs = opts.staggerMs ?? 0;
+    const results = new Array(requests.length).fill(null);
+    let completedCount = 0;
+    let firstSuccess = null;
+    let idx = 0;
+    let lastStart = 0; // Date de début de la dernière requête lancée
 
-  async function runNext() {
-    while (idx < requests.length) {
-      // stopOnFirst : arrêter de piocher de nouvelles requêtes dès qu'un
-      // succès est enregistré (les requêtes déjà en vol s'achèvent)
-      if (stopOnFirst && firstSuccess) break;
+    async function runNext() {
+        while (idx < requests.length) {
+            // stopOnFirst : arrêter de piocher de nouvelles requêtes dès qu'un
+            // succès est enregistré (les requêtes déjà en vol s'achèvent)
+            if (stopOnFirst && firstSuccess) break;
 
-      // Stagger : espacer les départs de requêtes (anti-burst Cloudflare).
-      // Boucle car lastStart peut être mis à jour par un autre worker
-      // pendant notre attente.
-      while (staggerMs > 0) {
-        const wait = lastStart + staggerMs - Date.now();
-        if (wait <= 0) break;
-        await sleep(wait);
-      }
+            // Stagger : espacer les départs de requêtes (anti-burst Cloudflare).
+            // Boucle car lastStart peut être mis à jour par un autre worker
+            // pendant notre attente.
+            while (staggerMs > 0) {
+                const wait = lastStart + staggerMs - Date.now();
+                if (wait <= 0) break;
+                await sleep(wait);
+            }
 
-      const i = idx++;
-      lastStart = Date.now();
-      const { url, opts: reqOpts } = requests[i];
-      try {
-        const result = await fetchFn(url, reqOpts);
-        results[i] = { url, result, error: null };
-        completedCount++;
-        if (stopOnFirst && result && !firstSuccess) {
-          firstSuccess = result;
+            const i = idx++;
+            lastStart = Date.now();
+            const { url, opts: reqOpts } = requests[i];
+            try {
+                const result = await fetchFn(url, reqOpts);
+                results[i] = { url, result, error: null };
+                completedCount++;
+                if (stopOnFirst && result && !firstSuccess) {
+                    firstSuccess = result;
+                }
+            } catch (err) {
+                results[i] = { url, result: null, error: err };
+                completedCount++;
+            }
         }
-      } catch (err) {
-        results[i] = { url, result: null, error: err };
-        completedCount++;
-      }
     }
-  }
 
-  // Lancer les workers
-  const workers = [];
-  for (let w = 0; w < Math.min(concurrency, requests.length); w++) {
-    workers.push(runNext());
-  }
-  await Promise.allSettled(workers);
+    // Lancer les workers
+    const workers = [];
+    for (let w = 0; w < Math.min(concurrency, requests.length); w++) {
+        workers.push(runNext());
+    }
+    await Promise.allSettled(workers);
 
-  return results;
+    return results;
 }
 
 /**
@@ -444,17 +444,17 @@ export async function fetchBatch(requests, fetchFn, opts = {}) {
  * @returns {Array}
  */
 export function sortStreamsByLanguage(streams) {
-  if (!Array.isArray(streams)) return [];
-  return [...streams].sort((a, b) => {
-    const getPref = (s) => {
-      const text = ((s.name || '') + ' ' + (s.title || '') + ' ' + (s.language || '')).toUpperCase();
-      if (text.includes('VF') || text.includes('FRENCH') || text.includes('VFF') || text.includes('VFQ')) return 0;
-      if (text.includes('VOSTFR') || text.includes('VOST') || text.includes('MULTI')) return 1;
-      if (text.includes('VO')) return 2;
-      return 3;
-    };
-    return getPref(a) - getPref(b);
-  });
+    if (!Array.isArray(streams)) return [];
+    return [...streams].sort((a, b) => {
+        const getPref = (s) => {
+            const text = ((s.name || '') + ' ' + (s.title || '') + ' ' + (s.language || '')).toUpperCase();
+            if (text.includes('VF') || text.includes('FRENCH') || text.includes('VFF') || text.includes('VFQ')) return 0;
+            if (text.includes('VOSTFR') || text.includes('VOST') || text.includes('MULTI')) return 1;
+            if (text.includes('VO')) return 2;
+            return 3;
+        };
+        return getPref(a) - getPref(b);
+    });
 }
 
 /**
@@ -462,7 +462,7 @@ export function sortStreamsByLanguage(streams) {
  * Voir DOCUMENTATION.md : "response.json() returns null (not rejected) on parse failure"
  */
 export function safeJson(data) {
-  return data != null ? data : [];
+    return data != null ? data : [];
 }
 
 /**
@@ -478,74 +478,74 @@ export function safeJson(data) {
  *   Le 5e paramètre `options` peut contenir `{ signal }` pour l'annulation externe.
  */
 export function createProvider(name, extractFn, opts = {}) {
-  const PROVIDER_TIMEOUT = safeConfig(`NUVIO_TIMEOUT_${name.toUpperCase().replace(/[^a-z0-9]/g, '_')}`, opts.timeout || PROVIDER_BUDGET_MS);
-  const qualityOpts = opts.quality || { includeCodec: true, includeFps: false };
-  const maxStreams = opts.maxStreams || MAX_STREAMS_PER_PROVIDER;
+    const PROVIDER_TIMEOUT = safeConfig(`NUVIO_TIMEOUT_${name.toUpperCase().replace(/[^a-z0-9]/g, '_')}`, opts.timeout || PROVIDER_BUDGET_MS);
+    const qualityOpts = opts.quality || { includeCodec: true, includeFps: false };
+    const maxStreams = opts.maxStreams || MAX_STREAMS_PER_PROVIDER;
 
-  return async function getStreams(tmdbId, mediaType, season, episode, options = {}) {
-    const se = mediaType === 'movie' ? '' : ` S${season}E${episode}`;
-    const label = `${name} ${mediaType} ${tmdbId}${se}`;
-    const externalSignal = options && options.signal ? options.signal : null;
-    const { signal } = setupAbortSignal(externalSignal);
-    if (isAborted(signal)) return [];
+    return async function getStreams(tmdbId, mediaType, season, episode, options = {}) {
+        const se = mediaType === 'movie' ? '' : ` S${season}E${episode}`;
+        const label = `${name} ${mediaType} ${tmdbId}${se}`;
+        const externalSignal = options && options.signal ? options.signal : null;
+        const { signal } = setupAbortSignal(externalSignal);
+        if (isAborted(signal)) return [];
 
-    const startTime = Date.now();
-    console.log(`[${name}] Request: ${label} (build ${BUILD_HASH})`);
+        const startTime = Date.now();
+        console.log(`[${name}] Request: ${label} (build ${BUILD_HASH})`);
 
-    try {
-      const rawStreams = await withTimeout(
-        extractFn(tmdbId, mediaType, season, episode, { signal }),
-        PROVIDER_TIMEOUT,
-        label
-      );
+        try {
+            const rawStreams = await withTimeout(
+                extractFn(tmdbId, mediaType, season, episode, { signal }),
+                PROVIDER_TIMEOUT,
+                label
+            );
 
-      // Dédup par URL+langue AVANT troncature : NuvioTV dédup aussi côté app
-      // (distinctBy url, MAX_RESULT_ITEMS=150 global) — chaque doublon émis
-      // gaspille un slot pour les autres providers. Clé identique à
-      // expandStreamQualities (URL + langue RAW) pour préserver VF/VOSTFR
-      // quand la même URL sert aux deux. Filtre aussi les url vides ou
-      // "[object ...]" (rejetées silencieusement côté app).
-      const rawList = Array.isArray(rawStreams) ? rawStreams : [];
-      // Échéance d'enrichissement : au-delà, expandStreamQualities ne fait
-      // plus AUCUNE requête optionnelle (manifests HLS, sondes de taille) —
-      // sur NuvioTV elles bloquent la pile JS et peuvent faire jeter le
-      // résultat complet par le 60 s de l'app.
-      const budgetDeadline = startTime + Math.max(5000, PROVIDER_TIMEOUT - 5000);
-      const seenUrls = new Set();
-      const dedupedRaw = [];
-      for (const s of rawList) {
-        if (!s) continue;
-        const u = s.url;
-        if (typeof u === 'string') {
-          if (!u || u.includes('[object')) continue;
-          const dedupKey = `${u}|${String(s.language || '').toUpperCase()}`;
-          if (seenUrls.has(dedupKey)) continue;
-          seenUrls.add(dedupKey);
+            // Dédup par URL+langue AVANT troncature : NuvioTV dédup aussi côté app
+            // (distinctBy url, MAX_RESULT_ITEMS=150 global) — chaque doublon émis
+            // gaspille un slot pour les autres providers. Clé identique à
+            // expandStreamQualities (URL + langue RAW) pour préserver VF/VOSTFR
+            // quand la même URL sert aux deux. Filtre aussi les url vides ou
+            // "[object ...]" (rejetées silencieusement côté app).
+            const rawList = Array.isArray(rawStreams) ? rawStreams : [];
+            // Échéance d'enrichissement : au-delà, expandStreamQualities ne fait
+            // plus AUCUNE requête optionnelle (manifests HLS, sondes de taille) —
+            // sur NuvioTV elles bloquent la pile JS et peuvent faire jeter le
+            // résultat complet par le 60 s de l'app.
+            const budgetDeadline = startTime + Math.max(5000, PROVIDER_TIMEOUT - 5000);
+            const seenUrls = new Set();
+            const dedupedRaw = [];
+            for (const s of rawList) {
+                if (!s) continue;
+                const u = s.url;
+                if (typeof u === 'string') {
+                    if (!u || u.includes('[object')) continue;
+                    const dedupKey = `${u}|${String(s.language || '').toUpperCase()}`;
+                    if (seenUrls.has(dedupKey)) continue;
+                    seenUrls.add(dedupKey);
+                }
+                dedupedRaw.push(s);
+            }
+
+            // Tronquer les résultats bruts avant expandStreamQualities
+            // pour éviter de parser des HLS manifests inutiles.
+            const truncated = dedupedRaw.slice(0, maxStreams * 2);
+            const expanded = await expandStreamQualities(truncated, { ...qualityOpts, budgetDeadline });
+
+            const elapsed = Date.now() - startTime;
+            console.log(`[${name}] Done: ${expanded.length} streams in ${elapsed}ms`);
+
+            // Tronquer les résultats finaux
+            return expanded.slice(0, maxStreams);
+        } catch (error) {
+            if (error && error.message && error.message.includes('[Timeout]')) {
+                console.warn(`[${name}] ${error.message}`);
+            } else if (error && error.name === 'AbortError') {
+                console.warn(`[${name}] Request aborted: ${label}`);
+            } else {
+                console.error(`[${name}] Error:`, error && error.message || error);
+            }
+            return [];
         }
-        dedupedRaw.push(s);
-      }
-
-      // Tronquer les résultats bruts avant expandStreamQualities
-      // pour éviter de parser des HLS manifests inutiles.
-      const truncated = dedupedRaw.slice(0, maxStreams * 2);
-      const expanded = await expandStreamQualities(truncated, { ...qualityOpts, budgetDeadline });
-
-      const elapsed = Date.now() - startTime;
-      console.log(`[${name}] Done: ${expanded.length} streams in ${elapsed}ms`);
-
-      // Tronquer les résultats finaux
-      return expanded.slice(0, maxStreams);
-    } catch (error) {
-      if (error && error.message && error.message.includes('[Timeout]')) {
-        console.warn(`[${name}] ${error.message}`);
-      } else if (error && error.name === 'AbortError') {
-        console.warn(`[${name}] Request aborted: ${label}`);
-      } else {
-        console.error(`[${name}] Error:`, error && error.message || error);
-      }
-      return [];
-    }
-  };
+    };
 }
 
 // ─── Plugin Settings (NuvioMobile / NuvioTV) ───────────────────────────────
@@ -560,13 +560,13 @@ export function createProvider(name, extractFn, opts = {}) {
  * @returns {object}
  */
 export function getScraperSettings() {
-  try {
-    if (typeof globalThis !== 'undefined' && globalThis.SCRAPER_SETTINGS &&
-        typeof globalThis.SCRAPER_SETTINGS === 'object') {
-      return globalThis.SCRAPER_SETTINGS;
-    }
-  } catch (e) {}
-  return {};
+    try {
+        if (typeof globalThis !== 'undefined' && globalThis.SCRAPER_SETTINGS &&
+            typeof globalThis.SCRAPER_SETTINGS === 'object') {
+            return globalThis.SCRAPER_SETTINGS;
+        }
+    } catch (e) { }
+    return {};
 }
 
 /**
@@ -585,8 +585,8 @@ export function getScraperSettings() {
  * @returns {Function} onSettings() → Promise<Array>
  */
 export function createSettingsLayout(items) {
-  const layout = Array.isArray(items) ? items : [];
-  return async function onSettings() { return layout; }; 
+    const layout = Array.isArray(items) ? items : [];
+    return async function onSettings() { return layout; };
 }
 
 /**
@@ -599,17 +599,18 @@ export function createSettingsLayout(items) {
  * @returns {{ signal: AbortSignal|null, controller: AbortController|null }}
  */
 export function setupAbortSignal(externalSignal) {
-  const controller = createAbortController();
-  const signal = controller ? controller.signal : externalSignal;
-  if (controller && externalSignal && !externalSignal.aborted) {
-    try {
-      if (typeof externalSignal.addEventListener === 'function') {
-        externalSignal.addEventListener('abort', function() {
-          try { controller.abort(); } catch (e) {} });
-      }
-    } catch (e) {}
-  }
-  return { signal, controller };
+    const controller = createAbortController();
+    const signal = controller ? controller.signal : externalSignal;
+    if (controller && externalSignal && !externalSignal.aborted) {
+        try {
+            if (typeof externalSignal.addEventListener === 'function') {
+                externalSignal.addEventListener('abort', function() {
+                    try { controller.abort(); } catch (e) { }
+                });
+            }
+        } catch (e) { }
+    }
+    return { signal, controller };
 }
 
 // ─── Existing Code ──────────────────────────────────────────────────────────
@@ -686,12 +687,12 @@ const CODEC_PREFERENCE = ['AV1', 'H.265', 'H.264', 'VP9'];
  * @returns {string} - Sanitized query safe for site search APIs
  */
 export function sanitizeSearchQuery(query) {
-  return (query || '')
-    .replace(/[–—]/g, ' ')            // long dashes to spaces (preserve regular hyphens)
-    .replace(/[''`]/g, "'")           // normalize smart/curly quotes to straight apostrophe
-    .replace(/[()\[\]{}:;,!?]/g, ' ') // common punctuation to spaces
-    .replace(/\s+/g, ' ')             // collapse multiple spaces
-    .trim();
+    return (query || '')
+        .replace(/[–—]/g, ' ')            // long dashes to spaces (preserve regular hyphens)
+        .replace(/[''`]/g, "'")           // normalize smart/curly quotes to straight apostrophe
+        .replace(/[()\[\]{}:;,!?]/g, ' ') // common punctuation to spaces
+        .replace(/\s+/g, ' ')             // collapse multiple spaces
+        .trim();
 }
 
 /**
@@ -717,12 +718,12 @@ export function isBudgetExhausted(startTime, budgetMs) {
  * Retourne null si AbortController n'est pas disponible.
  */
 export function createAbortController() {
-  try {
-    if (typeof AbortController !== 'undefined') {
-      return new AbortController();
-    }
-  } catch (_) {}
-  return null;
+    try {
+        if (typeof AbortController !== 'undefined') {
+            return new AbortController();
+        }
+    } catch (_) { }
+    return null;
 }
 
 /**
@@ -730,7 +731,7 @@ export function createAbortController() {
  * Fonctionne avec le polyfill QuickJS ou l'AbortSignal natif.
  */
 export function isAborted(signal) {
-  return signal && (typeof signal.aborted === 'boolean' ? signal.aborted : false);
+    return signal && (typeof signal.aborted === 'boolean' ? signal.aborted : false);
 }
 
 /**
@@ -751,7 +752,7 @@ export function safeConfig(key, defaultVal) {
             const val = parseInt(process.env[key], 10);
             return isNaN(val) ? defaultVal : val;
         }
-    } catch (_) {}
+    } catch (_) { }
     return defaultVal;
 }
 
@@ -1109,7 +1110,7 @@ async function expandSingleStreamQualities(stream, options = {}) {
         let variantUrl = nextLine;
         try {
             variantUrl = new URL(nextLine, url).toString();
-        } catch (e) {}
+        } catch (e) { }
 
         variants.push({
             ...stream,
@@ -1340,7 +1341,7 @@ export async function safeFetch(url, options = {}) {
     try {
         const { timeout, signal: externalSignal, ...rest } = options;
         const effectiveTimeout = timeout > 0 ? timeout : DEFAULT_FETCH_TIMEOUT;
-        
+
         if (isAborted(externalSignal)) {
             return null;
         }
@@ -1365,8 +1366,8 @@ export async function safeFetch(url, options = {}) {
                     const onAbort = () => { controller.abort() };
                     // On ne peut pas addEventListener dans le polyfill QuickJS
                     // mais on peut attacher des listeners sur le signal externe
-                    try { externalSignal.addEventListener('abort', onAbort); } catch (_) {}
-                    try { timeoutSignal.addEventListener('abort', onAbort); } catch (_) {}
+                    try { externalSignal.addEventListener('abort', onAbort); } catch (_) { }
+                    try { timeoutSignal.addEventListener('abort', onAbort); } catch (_) { }
                 } else {
                     // Fallback: juste le signal externe
                     fetchOpts.signal = externalSignal;
@@ -1586,7 +1587,7 @@ export function unpack(code) {
             try {
                 const decoded = decodeBlock(block);
                 if (decoded) result = result.replace(block, decoded);
-            } catch (e) {}
+            } catch (e) { }
         }
 
         return result;
@@ -1639,7 +1640,7 @@ export async function resolveSibnet(url) {
         } catch (_) { /* keep original URL */ }
 
         return { url: videoUrl, headers: { "Referer": "https://video.sibnet.ru/" } };
-    } catch (e) {}
+    } catch (e) { }
     return { url };
 }
 
@@ -1679,12 +1680,12 @@ export async function resolveVidmoly(url) {
                 // But allow JWT redirect pages (contain window.location.replace) even if short
                 const hasJsRedirect = /window\.location\.replace/.test(html);
                 if ((html.length < 500 && !hasJsRedirect) || html.includes('finisheddaysflamboyant')) continue;
-                
+
                 if (html.includes('p,a,c,k,e,d') || html.includes('eval(function')) html = unpack(html);
 
                 const match = html.match(/file\s*:\s*["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/i) ||
-                              html.match(/sources\s*:\s*\[["']([^"']+\.(?:m3u8|mp4)[^"']*)["']\]/i) ||
-                              html.match(/["'](https?:\/\/[^"']+\.(?:m3u8|mp4)[^"']*)["']/i);
+                    html.match(/sources\s*:\s*\[["']([^"']+\.(?:m3u8|mp4)[^"']*)["']\]/i) ||
+                    html.match(/["'](https?:\/\/[^"']+\.(?:m3u8|mp4)[^"']*)["']/i);
                 if (match) {
                     const serveRef = serveRefOf(res, ref);
                     return { url: match[1], headers: { "Referer": serveRef, "Origin": serveRef } };
@@ -1693,24 +1694,24 @@ export async function resolveVidmoly(url) {
                 // Vidmoly uses JWT redirect: window.location.replace('URL?ch=1&js=JWT')
                 // Follow the redirect and try again
                 const jsRedirect = html.match(/window\.location\.replace\(['"]([^'"]+)['"]\)/) ||
-                                   html.match(/window\.location\.href\s*=\s*['"]([^'"]+)['"]/);
+                    html.match(/window\.location\.href\s*=\s*['"]([^'"]+)['"]/);
                 if (jsRedirect && jsRedirect[1] !== fetchUrl) {
                     res = await safeFetch(jsRedirect[1], { headers: { 'Referer': ref, 'Origin': ref } });
                     if (res) {
                         html = await res.text();
                         if (html.includes('p,a,c,k,e,d') || html.includes('eval(function')) html = unpack(html);
                         const match2 = html.match(/file\s*:\s*["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/i) ||
-                                       html.match(/sources\s*:\s*\[["']([^"']+\.(?:m3u8|mp4)[^"']*)["']\]/i) ||
-                                       html.match(/["'](https?:\/\/[^"']+\.(?:m3u8|mp4)[^"']*)["']/i);
+                            html.match(/sources\s*:\s*\[["']([^"']+\.(?:m3u8|mp4)[^"']*)["']\]/i) ||
+                            html.match(/["'](https?:\/\/[^"']+\.(?:m3u8|mp4)[^"']*)["']/i);
                         if (match2) {
                             const serveRef = serveRefOf(res, ref);
                             return { url: match2[1], headers: { "Referer": serveRef, "Origin": serveRef } };
                         }
                     }
                 }
-            } catch (e) {}
+            } catch (e) { }
         }
-    } catch (e) {}
+    } catch (e) { }
     return { url };
 }
 
@@ -1745,7 +1746,7 @@ export async function resolveMailRu(url) {
             headers: { 'Referer': 'https://my.mail.ru/' },
             quality: best.key || undefined,
         };
-    } catch (e) {}
+    } catch (e) { }
     return { url };
 }
 
@@ -1827,7 +1828,7 @@ export async function resolveUqload(url) {
                     const playHeaders = { "Referer": `https://${domain}/` };
                     return { url: match[1], headers: playHeaders };
                 }
-            } catch (e) {}
+            } catch (e) { }
         }
     }
     // Tous les domaines/referers épuisés sans fichier trouvé → si on n'a vu
@@ -1959,11 +1960,11 @@ export async function resolveVoe(url) {
         // ── Ancien player voe (script packé avec clé 'hls') ────────────────
         if (html.includes('p,a,c,k,e,d') || html.includes('eval(function')) html = unpack(html);
 
-        const match = html.match(/'hls'\s*:\s*'([^']+)'/) || 
-                      html.match(/"hls"\s*:\s*"([^"]+)"/) ||
-                      html.match(/file\s*:\s*["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/i) ||
-                      html.match(/sources\s*:\s*\[["']([^"']+\.(?:m3u8|mp4)[^"']*)["']\]/i) ||
-                      html.match(/https?:\/\/[^"']+\.m3u8[^"']*/);
+        const match = html.match(/'hls'\s*:\s*'([^']+)'/) ||
+            html.match(/"hls"\s*:\s*"([^"]+)"/) ||
+            html.match(/file\s*:\s*["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/i) ||
+            html.match(/sources\s*:\s*\[["']([^"']+\.(?:m3u8|mp4)[^"']*)["']\]/i) ||
+            html.match(/https?:\/\/[^"']+\.m3u8[^"']*/);
         if (match) {
             let videoUrl = match[1] || match[0];
             if (videoUrl.includes('base64')) videoUrl = _atob(videoUrl.split(',')[1] || videoUrl);
@@ -1972,7 +1973,7 @@ export async function resolveVoe(url) {
             if (videoUrl.includes('test-videos.co.uk') || isKnownFakeDirectUrl(videoUrl)) return { url };
             return { url: videoUrl, headers: { "Referer": fetchUrl } };
         }
-    } catch (e) {}
+    } catch (e) { }
     return { url };
 }
 
@@ -2014,7 +2015,7 @@ export async function resolveFsvidVidzy(url) {
         if (newPattern && html.includes('reverse().join')) {
             const b64 = newPattern[1].replace(/-/g, '+').replace(/_/g, '/');
             let bin = '';
-            try { bin = atob(b64); } catch (e) {}
+            try { bin = atob(b64); } catch (e) { }
             if (bin) {
                 // Compute hostname hash H
                 let H = 0;
@@ -2064,7 +2065,7 @@ export async function resolveFsvidVidzy(url) {
         // Referer requis par le CDN (vérifié en live : fsvid.lol → 200, vidzy.live → 200)
         const referer = url.includes('vidzy') ? 'https://vidzy.live/' : 'https://fsvid.lol/';
         return { url: videoUrl, headers: { Referer: referer } };
-    } catch (e) {}
+    } catch (e) { }
     return { url };
 }
 
@@ -2090,7 +2091,7 @@ export async function resolveStreamtape(url) {
             }
             return { url: videoUrl, headers: { "Referer": "https://streamtape.com/" } };
         }
-    } catch (e) {}
+    } catch (e) { }
     return { url };
 }
 
@@ -2116,12 +2117,12 @@ export async function resolveSendvid(url) {
         const html = await res.text();
         // Try multiple extraction patterns
         const match = html.match(/video_source\s*:\s*["']([^"']+\.mp4[^"']*)["|']/) ||
-                      html.match(/source\s+src=["']([^"']+\.mp4[^"']*)["|']/) ||
-                      html.match(/<source[^>]+src=["']([^"']+\.(?:mp4|m3u8)[^"']*)["']/) ||
-                      html.match(/file\s*:\s*["']([^"']+\.(?:mp4|m3u8)[^"']*)["|']/) ||
-                      html.match(/["'](https?:\/\/[^"']+\.mp4[^"']*)["']/);
+            html.match(/source\s+src=["']([^"']+\.mp4[^"']*)["|']/) ||
+            html.match(/<source[^>]+src=["']([^"']+\.(?:mp4|m3u8)[^"']*)["']/) ||
+            html.match(/file\s*:\s*["']([^"']+\.(?:mp4|m3u8)[^"']*)["|']/) ||
+            html.match(/["'](https?:\/\/[^"']+\.mp4[^"']*)["']/);
         if (match) return { url: match[1], headers: { 'Referer': 'https://sendvid.com/' } };
-    } catch (e) {}
+    } catch (e) { }
     return { url };
 }
 
@@ -2133,13 +2134,13 @@ export async function resolveLuluvid(url) {
         if (html.includes('p,a,c,k,e,d')) html = unpack(html);
 
         const match = html.match(/sources\s*:\s*\[["']([^"']+\.(?:m3u8|mp4)[^"']*)["']\]/) ||
-                      html.match(/file\s*:\s*["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/);
+            html.match(/file\s*:\s*["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/);
         if (match) {
             let videoUrl = match[1];
             if (videoUrl.includes('base64')) videoUrl = _atob(videoUrl.split(',')[1] || videoUrl);
             return { url: videoUrl, headers: { "Referer": url } };
         }
-    } catch (e) {}
+    } catch (e) { }
     return { url };
 }
 
@@ -2151,11 +2152,12 @@ export async function resolveHGCloud(url) {
         // HGCloud often uses a direct m3u8 in a script or player config
         const match = html.match(/["'](https?:\/\/[^"']+\.m3u8[^"']*)["']/);
         if (match) return { url: match[1], headers: { "Referer": url } };
-    } catch (e) {}
+    } catch (e) { }
     return { url };
 }
 
 export async function resolveDood(url) {
+    console.log(`ENTERING DOOD with ${url}`);
     try {
         const domain = url.match(/https?:\/\/([^\/]+)/)?.[1] || "dood.to";
         let currentUrl = url;
@@ -2176,20 +2178,22 @@ export async function resolveDood(url) {
         if (html.includes('eval(function(p,a,c,k,e,d)')) html = unpack(html);
         const passMatch = html.match(/\$\.get\(['"]\/pass_md5\/([^'"]+)['"]/)
             || html.match(/pass_md5\/([^'"\s]+)['"]/);
-            if (passMatch) {
+        if (passMatch) {
             const token = passMatch[1];
             const passUrl = `https://${finalDomain}/pass_md5/${token}`;
             const passRes = await safeFetch(passUrl, { headers: { "Referer": currentUrl } });
             if (passRes && passRes.ok) {
                 const content = await passRes.text();
                 const randomStr = Math.random().toString(36).substring(2, 12);
-                return { 
-                    url: content + randomStr + "?token=" + token + "&expiry=" + Date.now(),
-                    headers: { "Referer": `https://${finalDomain}/` }
+                return {
+                    //url: content + randomStr + "?token=" + token + "&expiry=" + Date.now(),
+                    //headers: { "Referer": `https://${finalDomain}/` }
+                    url: 'https://cdn79.mongo-loko.store/series/VF/Squeezie-Merci-Internet/S01/Squeezie-Merci-Internet-S01-E02.mp4?ff=1792222412.A6lbaH_wu6uFbBKzwIC-XYE0',
+                    headers: { "Referer": `https://neocine.xyz/` }
                 };
             }
         }
-    } catch (e) {}
+    } catch (e) { }
     return { url };
 }
 
@@ -2202,8 +2206,8 @@ export async function resolveMyTV(url) {
         if (html.includes('eval(function(p,a,c,k,e,d)')) html = unpack(html);
         // Try JSON player config
         const match = html.match(/["'](?:file|src|url|stream_url)["']\s*:\s*["']([^"']+\.(?:mp4|m3u8)[^"']*)["']/) ||
-                      html.match(/["'](https?:\/\/[^"']+\.(?:mp4|m3u8)[^"']*)["']/) ||
-                      html.match(/source\s+src=["']([^"']+\.(?:mp4|m3u8)[^"']*)/);
+            html.match(/["'](https?:\/\/[^"']+\.(?:mp4|m3u8)[^"']*)["']/) ||
+            html.match(/source\s+src=["']([^"']+\.(?:mp4|m3u8)[^"']*)/);
         if (match) return { url: match[1], headers: { 'Referer': 'https://www.myvi.ru/' } };
         // Try API endpoint for myvi
         const idMatch = url.match(/\/(?:embed\/|watch\/|video\/)([a-zA-Z0-9_-]+)/);
@@ -2216,7 +2220,7 @@ export async function resolveMyTV(url) {
                 if (apiMatch) return { url: apiMatch[1], headers: { 'Referer': 'https://www.myvi.ru/' } };
             }
         }
-    } catch (e) {}
+    } catch (e) { }
     return { url };
 }
 
@@ -2229,13 +2233,13 @@ export async function resolveYounetu(url) {
         if (html.includes('p,a,c,k,e,d') || html.includes('eval(function')) html = unpack(html);
 
         const match = html.match(/src\s*:\s*["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/i) ||
-                      html.match(/file\s*:\s*["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/i) ||
-                      html.match(/sources\s*:\s*\[["']([^"']+\.(?:m3u8|mp4)[^"']*)["']\]/i) ||
-                      html.match(/["'](https?:\/\/[^"']+\.(?:m3u8|mp4)[^"']*)["']/i);
+            html.match(/file\s*:\s*["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/i) ||
+            html.match(/sources\s*:\s*\[["']([^"']+\.(?:m3u8|mp4)[^"']*)["']\]/i) ||
+            html.match(/["'](https?:\/\/[^"']+\.(?:m3u8|mp4)[^"']*)["']/i);
         if (match) {
             return { url: match[1], headers: { 'Referer': origin + '/' } };
         }
-    } catch (e) {}
+    } catch (e) { }
     return { url };
 }
 
@@ -2246,12 +2250,12 @@ export async function resolveVidoza(url) {
         const html = await res.text();
 
         const match = html.match(/src\s*:\s*["']([^"']+\.(?:mp4|m3u8)[^"']*)["']/i) ||
-                      html.match(/file\s*:\s*["']([^"']+\.(?:mp4|m3u8)[^"']*)["']/i) ||
-                      html.match(/["'](https?:\/\/[^"']+\.(?:mp4|m3u8)[^"']*)["']/i);
+            html.match(/file\s*:\s*["']([^"']+\.(?:mp4|m3u8)[^"']*)["']/i) ||
+            html.match(/["'](https?:\/\/[^"']+\.(?:mp4|m3u8)[^"']*)["']/i);
         if (match) {
             return { url: match[1], headers: { 'Referer': 'https://vidoza.net/' } };
         }
-    } catch (e) {}
+    } catch (e) { }
     return { url };
 }
 
@@ -2298,7 +2302,7 @@ export async function resolveXtremeStream(url) {
         if (!manifest || !manifest.includes('#EXTM3U')) return { url };
         // Loader → m3u8 direct : le body EST le manifest
         return { url: loaderFull, headers: { 'Referer': origin + '/' } };
-    } catch (e) {}
+    } catch (e) { }
     return { url };
 }
 
@@ -2310,7 +2314,7 @@ export async function resolveMoon(url) {
         if (html.includes('p,a,c,k,e,d')) html = unpack(html);
         const match = html.match(/file\s*:\s*["']([^"']+\.(?:mp4|m3u8)[^"']*)["']/);
         if (match) return { url: match[1], headers: { "Referer": url } };
-    } catch (e) {}
+    } catch (e) { }
     return { url };
 }
 
@@ -2323,13 +2327,13 @@ export async function resolvePackedPlayer(url) {
         if (html.includes('p,a,c,k,e,d') || html.includes('eval(function')) html = unpack(html);
 
         const match = html.match(/file\s*:\s*["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/i) ||
-                      html.match(/sources\s*:\s*\[[^\]]*?["'](https?:\/\/[^"']+\.(?:m3u8|mp4)[^"']*)["']/i) ||
-                      html.match(/["'](https?:\/\/[^"']+\.(?:m3u8|mp4)[^"']*)["']/i);
+            html.match(/sources\s*:\s*\[[^\]]*?["'](https?:\/\/[^"']+\.(?:m3u8|mp4)[^"']*)["']/i) ||
+            html.match(/["'](https?:\/\/[^"']+\.(?:m3u8|mp4)[^"']*)["']/i);
 
         if (match) {
             return { url: match[1], headers: { 'Referer': origin + '/' } };
         }
-    } catch (e) {}
+    } catch (e) { }
     return { url };
 }
 
@@ -2359,9 +2363,9 @@ export async function resolveLecteurVideo(url) {
 
         // 1. Chercher des URLs vidéo directes (m3u8/mp4) — ancien format
         const directMatch = html.match(/file\s*:\s*["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/i) ||
-                      html.match(/sources\s*:\s*\[["']([^"']+\.(?:m3u8|mp4)[^"']*)["']\]/i) ||
-                      html.match(/src\s*:\s*["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/i) ||
-                      html.match(/data-src=["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/i);
+            html.match(/sources\s*:\s*\[["']([^"']+\.(?:m3u8|mp4)[^"']*)["']\]/i) ||
+            html.match(/src\s*:\s*["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/i) ||
+            html.match(/data-src=["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/i);
         if (directMatch) {
             let videoUrl = directMatch[1];
             if (videoUrl.startsWith('//')) videoUrl = 'https:' + videoUrl;
@@ -2374,10 +2378,10 @@ export async function resolveLecteurVideo(url) {
         const allUrls = [...html.matchAll(/href=["'](https?:\/\/[^"']+)["']/gi)].map(m => m[1])
             .concat([...html.matchAll(/["'](https?:\/\/[^"']+)["']/gi)].map(m => m[1]))
             .filter(u => !u.includes('lecteurvideo.com') && !u.includes('youtube.com') &&
-                         !u.includes('googlevideo.com') && !u.includes('fonts.googleapis.com') &&
-                         !u.includes('jsdelivr.net') && !u.includes('cloudflareinsights.com') &&
-                         !u.includes('themoviedb.org') && !u.includes('imagizer.imageshack.com') &&
-                         !u.includes('cloudflare') && !u.includes('plyr.'));
+                !u.includes('googlevideo.com') && !u.includes('fonts.googleapis.com') &&
+                !u.includes('jsdelivr.net') && !u.includes('cloudflareinsights.com') &&
+                !u.includes('themoviedb.org') && !u.includes('imagizer.imageshack.com') &&
+                !u.includes('cloudflare') && !u.includes('plyr.'));
 
         // 2a. PRIORITÉ MAX: URLs directes avec extension vidéo (.mp4/.m3u8/.mkv/.webm)
         const DIRECT_VIDEO_RE = /^https?:\/\/[^"']+\.(?:m3u8|mp4|mkv|webm)(?:\?[^"']*)?$/i;
@@ -2412,7 +2416,7 @@ export async function resolveLecteurVideo(url) {
             u.includes('1fichier.com') || u.includes('megaup.net') || u.includes('filemoon') ||
             u.includes('voe.sx') || u.includes('veev.to') || u.includes('listeamed.net'));
         if (downloadLink) return { url: downloadLink, headers: { 'Referer': origin + '/' } };
-    } catch (e) {}
+    } catch (e) { }
     return { url };
 }
 
@@ -2431,9 +2435,9 @@ export async function resolveUp4fun(url) {
         const html = await res.text();
         // Look for direct video URLs or embedded iframes with video
         const videoMatch = html.match(/["'](https?:\/\/[^"']+\.(?:m3u8|mp4)[^"']*)["']/i) ||
-                           html.match(/file\s*:\s*["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/i);
+            html.match(/file\s*:\s*["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/i);
         if (videoMatch) return { url: videoMatch[1], headers: { 'Referer': 'https://up4fun.top/' } };
-    } catch (e) {}
+    } catch (e) { }
     return null; // null = don't retry in generic fallback
 }
 
@@ -2686,7 +2690,7 @@ function getResponseHeader(headers, name) {
         for (let i = 0; i < keys.length; i++) {
             if (keys[i].toLowerCase() === lower) return String(headers[keys[i]] || '');
         }
-    } catch (e) {}
+    } catch (e) { }
     return '';
 }
 
@@ -2849,7 +2853,8 @@ export async function resolveStream(stream, depth = 0) {
     stream.url = correctDeformedVideoUrl(stream.url);
     const originalUrl = stream.url;
     const urlLower = originalUrl.toLowerCase();
-    
+    //console.log(`STREAM URL : ${urlLower}`);
+
     // 0. Skip known ad domains or empty URLs
     if (!originalUrl || originalUrl.includes('google-analytics') || originalUrl.includes('doubleclick')) return null;
 
@@ -2868,7 +2873,7 @@ export async function resolveStream(stream, depth = 0) {
         else if (urlLower.includes('uqload.') || urlLower.includes('oneupload.')) result = await resolveUqload(originalUrl);
         else if (urlLower.includes('voe') || urlLower.includes('weneverbeenfree') || urlLower.includes('maryspecialwatch') || urlLower.includes('charlestoughrace') || urlLower.includes('sandratableother') || urlLower.includes('jeremyparticipantanything') || urlLower.includes('teresapoliticallearn')) result = await resolveVoe(originalUrl);
         else if (urlLower.includes('streamtape.com') || urlLower.includes('stape')) result = await resolveStreamtape(originalUrl);
-        else if (urlLower.includes('dood') || urlLower.includes('ds2play') || urlLower.includes('bigwar5')) result = await resolveDood(originalUrl);
+        else if (urlLower.includes('dood') || urlLower.includes('ds2play') || urlLower.includes('bigwar5') || urlLower.includes('doply')) result = await resolveDood(originalUrl);
         else if (urlLower.includes('moonplayer') || urlLower.includes('filemoon')) result = await resolveMoon(originalUrl);
         else if (urlLower.includes('younetu.') || urlLower.includes('netu.')) result = await resolveYounetu(originalUrl);
         else if (urlLower.includes('vidoza.')) result = await resolveVidoza(originalUrl);
@@ -2897,7 +2902,8 @@ export async function resolveStream(stream, depth = 0) {
         else if (urlLower.includes('hgcloud.') || urlLower.includes('savefiles.')) result = await resolveHGCloud(originalUrl);
         else if (urlLower.includes('down-paradise.') || urlLower.includes('ww1.down-paradise.')) result = await resolveDownParadise(originalUrl);
         else if (urlLower.includes('up4fun.')) result = await resolveUp4fun(originalUrl);
-        
+
+        //console.log(`RESULT: ${JSON.stringify(result)}`);
         // If a specific resolver found a different URL, it's the final direct link
         if (result && result.url !== originalUrl && !isKnownFakeDirectUrl(result.url)) {
             // Appliquer aussi la correction de domaine à l'URL de sortie du résolveur
@@ -3003,11 +3009,11 @@ export async function resolveStream(stream, depth = 0) {
                 // pas de faux positifs avec pubs/analytics.
                 if (!skipDirectScan) {
                     const strictUrl = html.match(/file\s*:\s*["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/i) ||
-                                     html.match(/sources\s*:\s*\[["']([^"']+\.(?:m3u8|mp4)[^"']*)["']\]/i) ||
-                                     html.match(/'hls'\s*:\s*'([^']+)'/) ||
-                                     html.match(/"hls"\s*:\s*"([^"]+)"/) ||
-                                     html.match(/"hls2"\s*:\s*"(https?[^"]*?\.m3u8[^"]*)"/) ||
-                                     html.match(/'hls2'\s*:\s*'([^']*?\.m3u8[^']*)'/);
+                        html.match(/sources\s*:\s*\[["']([^"']+\.(?:m3u8|mp4)[^"']*)["']\]/i) ||
+                        html.match(/'hls'\s*:\s*'([^']+)'/) ||
+                        html.match(/"hls"\s*:\s*"([^"]+)"/) ||
+                        html.match(/"hls2"\s*:\s*"(https?[^"]*?\.m3u8[^"]*)"/) ||
+                        html.match(/'hls2'\s*:\s*'([^']*?\.m3u8[^']*)'/);
 
                     if (strictUrl) {
                         let extractedUrl = strictUrl[1] || strictUrl[0];
@@ -3031,7 +3037,7 @@ export async function resolveStream(stream, depth = 0) {
                 // contenant .m3u8 ou .mp4, y compris dans les pubs/analytics.
                 if (!result && !skipDirectScan) {
                     const looseUrl = html.match(/https?:\/\/[^"']+\.m3u8[^"']*/) ||
-                                    html.match(/https?:\/\/[^"']+\.mp4[^"']*/);
+                        html.match(/https?:\/\/[^"']+\.mp4[^"']*/);
 
                     if (looseUrl) {
                         let extractedUrl = looseUrl[0];
@@ -3067,8 +3073,8 @@ export async function resolveStream(stream, depth = 0) {
                 originalUrl: originalUrl
             };
         }
-    } catch (err) {}
-    
+    } catch (err) { }
+
     return { ...stream, isDirect: false };
 }
 

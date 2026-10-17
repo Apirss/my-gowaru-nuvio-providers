@@ -9,15 +9,15 @@ import { getTmdbTitle } from '../utils/search-fallback.js';
 // et l'API scraper publique /api/fstream est servie sur api.movix.fun).
 // Les anciens domaines api.movix.cloud / api.movix.cash renvoient 404.
 const API_DOMAINS = [
-    'https://api.movix.fun'
+    'https://api.movix.dog'
 ];
 
-const SITE_ORIGIN = 'https://movix.fun';
+const SITE_ORIGIN = 'https://movix.dog';
 
 // Hosts connus pour être lents ou problématiques → on les ignore
 const SLOW_HOSTS = ['up4fun', 'dood', 'doodstream', 'moonplayer', 'filemoon', 'streamtape', 'stape'];
 // Hosts rapides prioritaires (résolution fiable en < 3s)
-const FAST_HOSTS = ['voe', 'uqload', 'fsvid', 'vidzy', 'netu', 'younetu', 'sendvid', 'sibnet'];
+const FAST_HOSTS = ['doodstream', 'voe', 'uqload', 'fsvid', 'vidzy', 'netu', 'younetu', 'sendvid', 'sibnet'];
 
 // Sources scraper alternatives de l'API Movix (formats vérifiés en live sur
 // api.movix.fun — le repo open-source movixcorp/MovixOpenSource référence les
@@ -31,6 +31,10 @@ const FALLBACK_SOURCES = [
     { name: 'wiflix', movie: true, tv: false },
     { name: 'j1f', movie: true, tv: false },
     { name: 'cpasmal', movie: true, tv: true },
+    { name: 'purstream', movie: true, tv: true },
+    { name: 'links', movie: true, tv: true },
+    { name: 'swiftflow', movie: true, tv: true },
+    { name: 'tmdb', movie: true, tv: true },
 ];
 
 // ─── Normalisation des tags de langue (Movix) ───────────────────────────────
@@ -181,7 +185,7 @@ async function fetchFromDomain(baseUrl, tmdbId, mediaType, season) {
     // Garde précoce : l'API renvoie {"success":false,...} quand le contenu n'existe
     // pas (ex: ID interne Movix au lieu d'un TMDB id) → inutile de parser
     if (!data || data.success === false) return null;
-
+    console.log(`HERE ${path}`);
     return { data, provider: 'fstream' };
 }
 
@@ -203,6 +207,31 @@ function parseStreams(data, provider, isMovie, episodeNum) {
                 pushStream(streams, provider, item?.player || item?.name, lang, item?.url, item?.quality);
             }
         }
+    }
+
+    // data.current_episode.player_links : {0: {}, 1: {}, ...}
+    if (!isMovie && data.current_episode) {
+        const ep = data.current_episode;
+        const list = ep.player_links;
+        if (Array.isArray(list));
+        {
+            for (const item of list) {
+                //console.log(`Pushing : ${JSON.stringify(item)}`)
+                pushStream(streams, provider, item?.quality, item?.language, item?.decoded_url, item?.quality);
+            }
+        }
+    }
+
+    // data.data : {0: {}, 1: {}, ...}
+    if (!isMovie && data.data) {
+        const ep = data.data[0];
+        const item = ep.links[1];
+        pushStream(streams, provider, item?.name, item?.language, item?.url, item?.quality);
+    }
+
+    if (!isMovie && data.sources) {
+        const item = data.sources[0];
+        pushStream(streams, provider, item?.name, item?.language, item?.url, item?.quality);
     }
 
     // Format 2: data.links { lang: [{name, url, quality}] }
@@ -372,9 +401,31 @@ async function fetchFallbackStreams(tmdbId, isMovie, season, episodeNum, signal)
             const supported = isMovie ? src.movie : src.tv;
             if (!supported) continue; // wiflix/j1f : films uniquement (TV=404/erreur)
 
-            const path = isMovie
-                ? `${baseUrl}/api/${src.name}/movie/${tmdbId}`
-                : `${baseUrl}/api/${src.name}/tv/${tmdbId}/season/${Number(season) || 1}`;
+            let path;
+            switch (src.name) {
+                case "cpasmal":
+                    path = isMovie
+                        ? `${baseUrl}/api/${src.name}/movie/${tmdbId}`
+                        : `${baseUrl}/api/${src.name}/tv/${tmdbId}/${Number(season) || 1}/${Number(episodeNum) || 1}`;
+                    break;
+                case "purstream":
+                    path = isMovie
+                        ? `${baseUrl}/api/${src.name}/movie/${tmdbId}`
+                        : `${baseUrl}/api/${src.name}/tv/${tmdbId}/stream?season=${Number(season) || 1}&episode=${Number(episodeNum) || 1}`;
+                    break;
+                case "tmdb":
+                case "links":
+                    path = isMovie
+                        ? `${baseUrl}/api/${src.name}/movie/${tmdbId}`
+                        : `${baseUrl}/api/${src.name}/tv/${tmdbId}/?season=${Number(season) || 1}&episode=${Number(episodeNum) || 1}`;
+                    break;
+                //wiflix, fstream, swiftflow
+                default:
+                    path = isMovie
+                        ? `${baseUrl}/api/${src.name}/movie/${tmdbId}`
+                        : `${baseUrl}/api/${src.name}/tv/${tmdbId}/season/${Number(season) || 1}`;
+                    break;
+            }
 
             console.log(`[Movix] Trying ${src.name}...`);
             // retries: 0 — les 404 "not found (Cached)" sont définitifs (la source
@@ -383,8 +434,9 @@ async function fetchFallbackStreams(tmdbId, isMovie, season, episodeNum, signal)
             if (!data || data.success === false) continue;
 
             const streams = parseStreams(data, src.name, isMovie, episodeNum);
+            console.log(`[Movix] Found ${streams.length} streams with ${src.name}`);
             if (streams.length > 0) {
-                console.log(`[Movix] ${streams.length} stream(s) from ${src.name}`);
+                //console.log(`[Movix] ${streams.length} stream(s) from ${src.name}`);
                 found.push(...streams);
             }
         }
@@ -424,7 +476,7 @@ async function resolveStreamsToPlayable(streams, prefs, signal) {
     // c'est la cause n°1 des "streams indisponibles" — des flux déjà jouables
     // restaient derrière les 2-3 premiers embeds en échec.
     const MAX_RESOLVE = 8;      // résolutions réseau max (embeds uniquement)
-    const TARGET_PLAYABLE = 4;  // assez pour couvrir VF/VFF/VFQ + VOSTFR
+    const TARGET_PLAYABLE = 8;  // assez pour couvrir VF/VFF/VFQ + VOSTFR
     const playable = [];
     const seenPlayable = new Set();
     const startTime = Date.now();
@@ -448,23 +500,46 @@ async function resolveStreamsToPlayable(streams, prefs, signal) {
 
     // ─── Passe 2 : embeds → resolveStream (8s max par host) ──────────────
     if (playable.length < TARGET_PLAYABLE && !isAborted(signalGuard)) {
-        const toResolve = unique.filter(s => !isDirectVideoUrl(s.url)).slice(0, MAX_RESOLVE);
+        //logObject("BEFORE FILTER unique->toResolve", unique);
+        //const toResolve = unique.filter(s => !isDirectVideoUrl(s.url)).slice(0, MAX_RESOLVE);
+        const toResolve = unique.filter(s => !isDirectVideoUrl(s.url));
+        //logObject("toResolve", toResolve);
         for (const stream of toResolve) {
-            if (playable.length >= TARGET_PLAYABLE) break;
-            if (Date.now() - startTime > BUDGET_MS) break;
+            //if (playable.length >= TARGET_PLAYABLE) break;
+            //if (Date.now() - startTime > BUDGET_MS) break;
             try {
-                addPlayable(await resolveForExo(stream));
+                if (!addPlayable(await resolveForExo(stream))) {
+                    //console.log(`Failed to resolve : ${JSON.stringify(stream)}`);
+                    console.log(`Failed to resolve : ${stream.title}`);
+                }
             } catch (e) {
                 console.warn(`[Movix] resolveStream failed: ${e?.message}`);
             }
         }
     }
-
     console.log(`[Movix] Total: ${unique.length} streams, ${playable.length} playable (${Date.now() - startTime}ms)`);
+    //logObject("unique", unique);
+    logObject("playable", playable);
     return playable;
 }
 
 // ─── Fonction principale d'extraction ────────────────────────────────────────
+
+function logObject(name, myObj) {
+    console.log(`[Movix] Logging Object : ${name}`);
+    //for (var i in myObj) {
+    //    console.log(`[Movix] Index : ${i}`);
+    //    for (var key in myObj[i]) {
+    //        console.log(`[Movix] ${key + ": " + myObj[i][key]}`);
+    //        //if (typeof myObj[i][key] === 'object')
+    //        //logObject(`SubObject : ${key} at index : ${i}`, myObj[i][key]);
+    //    }
+    //}
+    for (var i of myObj) {
+        console.log(`[Movix] OBJ : ${JSON.stringify(i)}`);
+    }
+    console.log("END OBJECT");
+}
 
 export async function extractStreams(tmdbId, mediaType, season, episode, options = {}) {
     const signal = options?.signal || null;
@@ -496,13 +571,13 @@ export async function extractStreams(tmdbId, mediaType, season, episode, options
 
     // Étape 2 : sources alternatives (wiflix/j1f/cpasmal) en fallback si fstream vide
     let fallbackTried = false;
-    if (allStreams.length === 0) {
-        console.log('[Movix] No streams from fstream, trying fallback sources (wiflix/j1f/cpasmal)...');
-        allStreams = await fetchFallbackStreams(tmdbId, isMovie, season, episodeNum, signal);
-        // 'déjà tenté' (même si 0 stream trouvé) : évite que l'Étape 4 re-fetche
-        // les mêmes sources après un searchFallback qui aurait rempli allStreams
-        fallbackTried = true;
-    }
+    //if (allStreams.length === 0) {
+    console.log('[Movix] No streams from fstream, trying fallback sources (wiflix/j1f/cpasmal)...');
+    allStreams.push(...(await fetchFallbackStreams(tmdbId, isMovie, season, episodeNum, signal)));
+    // 'déjà tenté' (même si 0 stream trouvé) : évite que l'Étape 4 re-fetche
+    // les mêmes sources après un searchFallback qui aurait rempli allStreams
+    //fallbackTried = true;
+    //}
 
     // Étape 3 : Si aucun stream trouvé, essayer le fallback search
     if (allStreams.length === 0) {
