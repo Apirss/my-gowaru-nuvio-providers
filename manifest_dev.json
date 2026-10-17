@@ -1,0 +1,32 @@
+{
+  "name": "Gowaru's Repo",
+  "version": "1.2.4",
+  "scrapers": [
+    {
+      "id": "movix",
+      "name": "Movix",
+      "description": "Films, Séries et Animes en VF et VOSTFR.",
+      "version": "0.1.5",
+      "hasSettings": true,
+      "author": "Gowaru",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/movix.js",
+      "enabled": true,
+      "logo": "https://movix.fun/movix.png",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "mkv",
+        "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": true
+    }
+  ]
+}

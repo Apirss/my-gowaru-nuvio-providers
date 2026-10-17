@@ -1,6 +1,6 @@
 /**
  * waveanime - Built from src/waveanime/
- * Generated: 2026-10-17T20:11:36.728896704Z
+ * Generated: 2026-10-17T23:28:19.812699791Z
  */
 var __provider = (() => {
   var __create = Object.create;
@@ -86,6 +86,51 @@ var __provider = (() => {
       step((generator = generator.apply(__this, __arguments)).next());
     });
   };
+
+  // src/utils/seekstream_resolver.js
+  var TTLCache, caches;
+  var init_seekstream_resolver = __esm({
+    "src/utils/seekstream_resolver.js"() {
+      TTLCache = class {
+        constructor(maxSize = 500, ttlMs = 72e5) {
+          this._cache = /* @__PURE__ */ new Map();
+          this._maxSize = maxSize;
+          this._ttlMs = ttlMs;
+        }
+        get(key) {
+          const entry = this._cache.get(key);
+          if (!entry) return null;
+          if (Date.now() - entry.ts > this._ttlMs) {
+            this._cache.delete(key);
+            return null;
+          }
+          return entry.value;
+        }
+        set(key, value) {
+          if (this._cache.size >= this._maxSize) {
+            const firstKey = this._cache.keys().next().value;
+            this._cache.delete(firstKey);
+          }
+          this._cache.set(key, { value, ts: Date.now() });
+        }
+      };
+      caches = {
+        // voe: new TTLCache(500, 7200000),
+        // fsvid: new TTLCache(500, 60000),
+        // vidzy: new TTLCache(500, 7200000),
+        // vidmoly: new TTLCache(500, 7200000),
+        // sibnet: new TTLCache(500, 7200000),
+        // uqload: new TTLCache(500, 7200000),
+        // doodstream: new TTLCache(500, 3600000),
+        // lulustream: new TTLCache(500, 3600000),
+        // veev: new TTLCache(500, 3600000),
+        // // Vidara's token is IP-bound and short-lived: cache briefly or we hand back
+        // // a URL that is already dead.
+        // vidara: new TTLCache(500, 900000),
+        seekstreaming: new TTLCache(500, 3e5)
+      };
+    }
+  });
 
   // src/utils/resolvers.js
   function isTruncatedBody(text) {
@@ -757,14 +802,15 @@ var __provider = (() => {
     }
     return "";
   }
-  var PROVIDER_BUDGET_MS, MAX_STREAMS_PER_PROVIDER, MAX_SAFE_FETCH_BODY_BYTES, RUNTIME_TRUNCATION_SUFFIX, BUILD_HASH, HAS_NATIVE_CRYPTO, _nodeCrypto, HAS_NATIVE_TIMERS, HEADERS, USER_AGENT, BASE_HEADERS, CODEC_PREFERENCE, TV_BUDGET_MS, STRICT_QUALITY_TIERS, DEFAULT_QUALITY_TIER, CODEC_PRIORITY, manifestCache, MANIFEST_CACHE_TTL, FETCH_CACHE_TTL, fetchCache, LANGUAGE_CODE_MAP, MAX_MANIFEST_EXPANSIONS, MAX_SIZE_PROBES, DEFAULT_FETCH_TIMEOUT, TTLCache, caches, DOODSTREAM_PASS_PATTERN;
+  var PROVIDER_BUDGET_MS, MAX_STREAMS_PER_PROVIDER, MAX_SAFE_FETCH_BODY_BYTES, RUNTIME_TRUNCATION_SUFFIX, BUILD_HASH, HAS_NATIVE_CRYPTO, _nodeCrypto, HAS_NATIVE_TIMERS, HEADERS, USER_AGENT, BASE_HEADERS, CODEC_PREFERENCE, TV_BUDGET_MS, STRICT_QUALITY_TIERS, DEFAULT_QUALITY_TIER, CODEC_PRIORITY, manifestCache, MANIFEST_CACHE_TTL, FETCH_CACHE_TTL, fetchCache, LANGUAGE_CODE_MAP, MAX_MANIFEST_EXPANSIONS, MAX_SIZE_PROBES, DEFAULT_FETCH_TIMEOUT;
   var init_resolvers = __esm({
     "src/utils/resolvers.js"() {
+      init_seekstream_resolver();
       PROVIDER_BUDGET_MS = 45e3;
       MAX_STREAMS_PER_PROVIDER = 80;
       MAX_SAFE_FETCH_BODY_BYTES = 1024 * 1024;
       RUNTIME_TRUNCATION_SUFFIX = "\n...[truncated]";
-      BUILD_HASH = true ? "bdfa2e3b" : "dev";
+      BUILD_HASH = true ? "c978c6ce" : "dev";
       HAS_NATIVE_CRYPTO = typeof crypto !== "undefined" && typeof crypto.subtle !== "undefined" && typeof TextEncoder !== "undefined" && typeof TextDecoder !== "undefined";
       _nodeCrypto = null;
       try {
@@ -830,45 +876,6 @@ var __provider = (() => {
       MAX_MANIFEST_EXPANSIONS = 6;
       MAX_SIZE_PROBES = 3;
       DEFAULT_FETCH_TIMEOUT = 15e3;
-      TTLCache = class {
-        constructor(maxSize = 500, ttlMs = 72e5) {
-          this._cache = /* @__PURE__ */ new Map();
-          this._maxSize = maxSize;
-          this._ttlMs = ttlMs;
-        }
-        get(key) {
-          const entry = this._cache.get(key);
-          if (!entry) return null;
-          if (Date.now() - entry.ts > this._ttlMs) {
-            this._cache.delete(key);
-            return null;
-          }
-          return entry.value;
-        }
-        set(key, value) {
-          if (this._cache.size >= this._maxSize) {
-            const firstKey = this._cache.keys().next().value;
-            this._cache.delete(firstKey);
-          }
-          this._cache.set(key, { value, ts: Date.now() });
-        }
-      };
-      caches = {
-        voe: new TTLCache(500, 72e5),
-        fsvid: new TTLCache(500, 6e4),
-        vidzy: new TTLCache(500, 72e5),
-        vidmoly: new TTLCache(500, 72e5),
-        sibnet: new TTLCache(500, 72e5),
-        uqload: new TTLCache(500, 72e5),
-        doodstream: new TTLCache(500, 36e5),
-        lulustream: new TTLCache(500, 36e5),
-        veev: new TTLCache(500, 36e5),
-        // Vidara's token is IP-bound and short-lived: cache briefly or we hand back
-        // a URL that is already dead.
-        vidara: new TTLCache(500, 9e5),
-        seekstreaming: new TTLCache(500, 3e5)
-      };
-      DOODSTREAM_PASS_PATTERN = new RegExp("\\/pass_md5\\/[\\w-]+\\/(?<token>[\\w-]+)");
     }
   });
 

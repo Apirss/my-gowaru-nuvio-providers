@@ -17,7 +17,7 @@ const SITE_ORIGIN = 'https://movix.dog';
 // Hosts connus pour être lents ou problématiques → on les ignore
 const SLOW_HOSTS = ['up4fun', 'dood', 'doodstream', 'moonplayer', 'filemoon', 'streamtape', 'stape'];
 // Hosts rapides prioritaires (résolution fiable en < 3s)
-const FAST_HOSTS = ['doodstream', 'voe', 'uqload', 'fsvid', 'vidzy', 'netu', 'younetu', 'sendvid', 'sibnet'];
+const FAST_HOSTS = ['voe', 'uqload', 'fsvid', 'vidzy', 'netu', 'younetu', 'sendvid', 'sibnet'];
 
 // Sources scraper alternatives de l'API Movix (formats vérifiés en live sur
 // api.movix.fun — le repo open-source movixcorp/MovixOpenSource référence les

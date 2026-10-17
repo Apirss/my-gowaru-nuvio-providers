@@ -1,6 +1,6 @@
 /**
  * flemmix - Built from src/flemmix/
- * Generated: 2026-10-17T20:11:36.318896289Z
+ * Generated: 2026-10-17T23:28:19.393699367Z
  */
 var __provider = (() => {
   var __create = Object.create;
@@ -86,6 +86,227 @@ var __provider = (() => {
       step((generator = generator.apply(__this, __arguments)).next());
     });
   };
+
+  // src/utils/seekstream_resolver.js
+  function md5Hash(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash;
+    }
+    return "h_" + Math.abs(hash).toString(36);
+  }
+  function safelyDecodeSeekStreamingUrl(value) {
+    let decoded = String(value || "").trim();
+    for (let index = 0; index < 2; index += 1) {
+      try {
+        const next = decodeURIComponent(decoded);
+        if (next === decoded) break;
+        decoded = next;
+      } catch (e) {
+        return null;
+      }
+    }
+    return decoded;
+  }
+  function parseSeekStreamingEmbedUrl(input) {
+    const decoded = safelyDecodeSeekStreamingUrl(input);
+    if (!decoded || /[\u0000-\u001f\u007f]/.test(decoded)) {
+      return null;
+    }
+    try {
+      const url = new URL(decoded);
+      if (!["http:", "https:"].includes(url.protocol) || url.username || url.password || url.pathname !== "/" || url.search !== "?") return null;
+      const videoId = url.hash.slice(1);
+      if (!/^[A-Za-z0-9_-]{1,128}$/.test(videoId)) {
+        return null;
+      }
+      ;
+      const origin = url.origin;
+      return {
+        embedUrl: `${origin} / #${videoId}`,
+        hostname: url.hostname.toLowerCase(),
+        videoId,
+        origin,
+        referer: `${origin} / `,
+        cacheKey: `${url.hostname.toLowerCase()}: ${videoId}`
+      };
+    } catch (e) {
+      console.log(`Error in parsing: ${e.message}`);
+      return null;
+    }
+  }
+  function selectSeekStreamingPlaybackSource(data) {
+    if (!data || typeof data !== "object") return null;
+    for (const kind of ["source", "master", "masterUrl"]) {
+      const rawUrl = data[kind];
+      if (typeof rawUrl !== "string") continue;
+      try {
+        const url = new URL(rawUrl);
+        if (!["http:", "https:"].includes(url.protocol) || url.username || url.password) continue;
+        return { kind, url: url.href };
+      } catch (e) {
+        continue;
+      }
+    }
+    return null;
+  }
+  function selectSeekStreamingPlaybackSources(data) {
+    if (!data || typeof data !== "object") return [];
+    const candidates = [];
+    const seen = /* @__PURE__ */ new Set();
+    const add = (kind, rawUrl) => {
+      if (typeof rawUrl !== "string") return;
+      try {
+        const url = new URL(rawUrl);
+        if (!["http:", "https:"].includes(url.protocol) || url.username || url.password) return;
+        if (seen.has(url.href)) return;
+        seen.add(url.href);
+        candidates.push({ kind, url: url.href });
+      } catch (e) {
+      }
+    };
+    add("cfNative", data.cfNative);
+    const source = selectSeekStreamingPlaybackSource(data);
+    if (source) add("source", source.url);
+    return candidates;
+  }
+  function getSeekStreamingRequestHeaders(embedUrl) {
+    const parsed = typeof embedUrl === "object" && (embedUrl == null ? void 0 : embedUrl.origin) ? embedUrl : parseSeekStreamingEmbedUrl(embedUrl);
+    if (!parsed) return null;
+    return { Origin: parsed.origin, Referer: parsed.referer };
+  }
+  function hexToBytes(hex) {
+    const bytes = new Uint8Array(hex.length / 2);
+    for (let i = 0; i < hex.length; i += 2) {
+      bytes[i / 2] = parseInt(hex.substr(i, 2), 16);
+    }
+    return bytes;
+  }
+  function decryptAesCbc(hexData, keyStr, ivStr) {
+    return __async(this, null, function* () {
+      try {
+        const cleanHex = hexData.trim().replace(/"/g, "");
+        const data = hexToBytes(cleanHex);
+        const keyBytes = new TextEncoder().encode(keyStr);
+        const ivBytes = new TextEncoder().encode(ivStr);
+        const cryptoKey = yield crypto.subtle.importKey(
+          "raw",
+          keyBytes,
+          { name: "AES-CBC" },
+          false,
+          ["decrypt"]
+        );
+        const decrypted = yield crypto.subtle.decrypt(
+          { name: "AES-CBC", iv: ivBytes },
+          cryptoKey,
+          data
+        );
+        return new TextDecoder().decode(decrypted);
+      } catch (e) {
+        console.error("[EXT-SEEKSTREAMING] AES decryption error:", e);
+        return null;
+      }
+    });
+  }
+  function extractSeekStreaming(seekUrl) {
+    return __async(this, null, function* () {
+      console.log(`ENTERING SEEK with ${seekUrl}`);
+      const parsed = parseSeekStreamingEmbedUrl(seekUrl);
+      if (!parsed) {
+        console.log("Here1");
+        return { seekUrl };
+      }
+      const cacheKey = md5Hash(parsed.cacheKey);
+      const cached = caches.seekstreaming.get(cacheKey);
+      if (cached) return __spreadProps(__spreadValues({}, cached), { fromCache: true });
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 1e4);
+      try {
+        const headers = __spreadValues({
+          "User-Agent": SEEKSTREAMING_USER_AGENT,
+          "Accept": "*/*",
+          "Accept-Language": "en-US,en;q=0.5"
+        }, getSeekStreamingRequestHeaders(parsed));
+        const query = new URLSearchParams({
+          id: parsed.videoId,
+          w: "1920",
+          h: "1080",
+          r: ""
+        }).toString();
+        const apiUrl = `${parsed.origin}/api/v1/video?${query}`;
+        const response = yield fetch(apiUrl, { headers, signal: controller.signal });
+        console.log(`GOT ${JSON.stringify(response)}`);
+        if (!response.ok) {
+          return { seekUrl };
+        }
+        const decryptedRaw = yield decryptAesCbc(
+          yield response.text(),
+          SEEKSTREAMING_AES_KEY_RAW,
+          SEEKSTREAMING_AES_IV_RAW
+        );
+        const selected = selectSeekStreamingPlaybackSources(JSON.parse(decryptedRaw));
+        if (selected.length === 0) {
+          return { seekUrl };
+        }
+        const result = { url: selected[0].url, Referer: parsed.referer };
+        caches.seekstreaming.set(cacheKey, result);
+        return result;
+      } catch (error) {
+        console.err(`extractSeekStreaming Error : ${error.message}`);
+        return { seekUrl };
+      } finally {
+        clearTimeout(timer);
+      }
+    });
+  }
+  var TTLCache, caches, SEEKSTREAMING_USER_AGENT, SEEKSTREAMING_AES_KEY_RAW, SEEKSTREAMING_AES_IV_RAW;
+  var init_seekstream_resolver = __esm({
+    "src/utils/seekstream_resolver.js"() {
+      TTLCache = class {
+        constructor(maxSize = 500, ttlMs = 72e5) {
+          this._cache = /* @__PURE__ */ new Map();
+          this._maxSize = maxSize;
+          this._ttlMs = ttlMs;
+        }
+        get(key) {
+          const entry = this._cache.get(key);
+          if (!entry) return null;
+          if (Date.now() - entry.ts > this._ttlMs) {
+            this._cache.delete(key);
+            return null;
+          }
+          return entry.value;
+        }
+        set(key, value) {
+          if (this._cache.size >= this._maxSize) {
+            const firstKey = this._cache.keys().next().value;
+            this._cache.delete(firstKey);
+          }
+          this._cache.set(key, { value, ts: Date.now() });
+        }
+      };
+      caches = {
+        // voe: new TTLCache(500, 7200000),
+        // fsvid: new TTLCache(500, 60000),
+        // vidzy: new TTLCache(500, 7200000),
+        // vidmoly: new TTLCache(500, 7200000),
+        // sibnet: new TTLCache(500, 7200000),
+        // uqload: new TTLCache(500, 7200000),
+        // doodstream: new TTLCache(500, 3600000),
+        // lulustream: new TTLCache(500, 3600000),
+        // veev: new TTLCache(500, 3600000),
+        // // Vidara's token is IP-bound and short-lived: cache briefly or we hand back
+        // // a URL that is already dead.
+        // vidara: new TTLCache(500, 900000),
+        seekstreaming: new TTLCache(500, 3e5)
+      };
+      SEEKSTREAMING_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36";
+      SEEKSTREAMING_AES_KEY_RAW = "kiemtienmua911ca";
+      SEEKSTREAMING_AES_IV_RAW = "1234567890oiuytr";
+    }
+  });
 
   // src/utils/resolvers.js
   function isTruncatedBody(text) {
@@ -1292,110 +1513,39 @@ var __provider = (() => {
       return { url };
     });
   }
-  function md5Hash(str) {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      const char = str.charCodeAt(i);
-      hash = (hash << 5) - hash + char;
-      hash = hash & hash;
-    }
-    return "h_" + Math.abs(hash).toString(36);
-  }
-  function resolveDood(doodUrl) {
+  function resolveDood(url) {
     return __async(this, null, function* () {
-      console.log(`[EXT-DOODSTREAM] Extracting from: ${doodUrl}`);
-      const cacheKey = md5Hash(doodUrl);
-      const cached = caches.doodstream.get(cacheKey);
-      if (cached) return __spreadProps(__spreadValues({}, cached), { fromCache: true });
+      var _a, _b;
       try {
-        const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), 3e3);
-        const embedOrigin = new URL(doodUrl).origin;
-        const headers = {
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
-          Referer: `${embedOrigin}/`
-        };
-        const resp = yield fetch(doodUrl, {
-          headers,
-          redirect: "follow",
-          signal: controller.signal
-        });
-        if (!resp.ok) {
-          clearTimeout(timer);
-          console.err(`DoodStream: HTTP ${resp.status}`);
-          return { doodUrl };
+        const domain = ((_a = url.match(/https?:\/\/([^\/]+)/)) == null ? void 0 : _a[1]) || "dood.to";
+        let currentUrl = url;
+        let res = yield safeFetch(currentUrl);
+        if (!res) return { url };
+        let finalUrl = res.url || currentUrl;
+        const finalDomain = ((_b = finalUrl.match(/https?:\/\/([^\/]+)/)) == null ? void 0 : _b[1]) || domain;
+        let html = yield res.text();
+        if (finalDomain !== domain) {
+          currentUrl = finalUrl;
         }
-        let html = yield resp.text();
-        let playerUrl = resp.url || doodUrl;
-        if (!DOODSTREAM_MAKEPLAY_PATTERN.test(html) && !DOODSTREAM_PASS_PATTERN.test(html)) {
-          const iframe = html.match(/<iframe[^>]*\ssrc="([^"]+)"/i);
-          const nextUrl = iframe ? new URL(iframe[1], playerUrl).href : playerUrl.includes("/d/") ? playerUrl.replace("/d/", "/e/") : null;
-          if (nextUrl && nextUrl !== playerUrl) {
-            try {
-              const nextResp = yield fetch(nextUrl, {
-                headers: __spreadProps(__spreadValues({}, headers), { Referer: playerUrl }),
-                redirect: "follow",
-                signal: controller.signal
-              });
-              if (nextResp.ok) {
-                html = yield nextResp.text();
-                playerUrl = nextResp.url || nextUrl;
-              }
-            } catch (e) {
-            }
+        res = null;
+        if (html.includes("eval(function(p,a,c,k,e,d)")) html = unpack(html);
+        const passMatch = html.match(/\$\.get\(['"]\/pass_md5\/([^'"]+)['"]/) || html.match(/pass_md5\/([^'"\s]+)['"]/);
+        if (passMatch) {
+          const token = passMatch[1];
+          const passUrl = `https://${finalDomain}/pass_md5/${token}`;
+          const passRes = yield safeFetch(passUrl, { headers: { "Referer": currentUrl } });
+          if (passRes && passRes.ok) {
+            const content = yield passRes.text();
+            const randomStr = Math.random().toString(36).substring(2, 12);
+            return {
+              url: content + randomStr + "?token=" + token + "&expiry=" + Date.now(),
+              headers: { "Referer": `https://${finalDomain}/` }
+            };
           }
         }
-        const passMatch = html.match(DOODSTREAM_PASS_PATTERN);
-        const makePlay = html.match(DOODSTREAM_MAKEPLAY_PATTERN);
-        const passMd5Url = passMatch ? passMatch[0] : makePlay ? makePlay[1] : null;
-        if (!passMd5Url) {
-          clearTimeout(timer);
-          console.err(`DoodStream: File was deleted`);
-          return { doodUrl };
-        }
-        const parsedUrl = new URL(playerUrl);
-        const domain = `${parsedUrl.protocol}//${parsedUrl.host}`;
-        const tokenMatch = html.match(DOODSTREAM_TOKEN_PATTERN);
-        const token = tokenMatch ? tokenMatch[1] : passMd5Url.replace(/\/+$/, "").split("/").pop();
-        const passHeaders = {
-          Referer: playerUrl,
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36"
-        };
-        const passUrl = passMd5Url.startsWith("http") ? passMd5Url : `${domain}${passMd5Url}`;
-        const passResp = yield fetch(passUrl, {
-          headers: passHeaders,
-          signal: controller.signal
-        });
-        const baseUrl = (yield passResp.text()).trim();
-        clearTimeout(timer);
-        if (!baseUrl.startsWith("http")) {
-          console.err(`DoodStream: unexpected pass_md5 payload`);
-          return { doodUrl };
-        }
-        let videoUrl;
-        if (baseUrl.includes("cloudflarestorage.")) {
-          videoUrl = baseUrl;
-        } else {
-          const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-          let randomStr = "";
-          for (let i = 0; i < 10; i++) {
-            randomStr += chars.charAt(Math.floor(Math.random() * chars.length));
-          }
-          videoUrl = `${baseUrl}${randomStr}?token=${token}&expiry=${Date.now()}`;
-        }
-        const result = {
-          //url: videoUrl,
-          //headers: { "Referer": playerUrl }
-          url: "https://neocine.embedseek.com/v4/pl/spz.platformdocumentationhub.site/ipt/iflfk/master.1787674609.m3u8?k=znbs3lChX-Q5J4XTs56X4w&kx=1792280573",
-          headers: { "Referer": "https://neocine.embedseek.com/" }
-        };
-        caches.doodstream.set(cacheKey, result);
-        console.log(`RESULT FROM DOOD : ${JSON.stringify(result)}`);
-        return result;
       } catch (e) {
-        console.error("[EXT-DOODSTREAM] Error:", e);
-        return { doodUrl };
       }
+      return { url };
     });
   }
   function resolveMyTV(url) {
@@ -1762,6 +1912,7 @@ var __provider = (() => {
         else if (urlLower.includes("hgcloud.") || urlLower.includes("savefiles.")) result = yield resolveHGCloud(originalUrl);
         else if (urlLower.includes("down-paradise.") || urlLower.includes("ww1.down-paradise.")) result = yield resolveDownParadise(originalUrl);
         else if (urlLower.includes("up4fun.")) result = yield resolveUp4fun(originalUrl);
+        else if (urlLower.includes("neocine.")) result = yield extractSeekStreaming(originalUrl);
         if (result && result.url !== originalUrl && !isKnownFakeDirectUrl(result.url)) {
           const finalUrl = correctDeformedVideoUrl(result.url);
           if (finalUrl !== result.url) {
@@ -1868,14 +2019,15 @@ var __provider = (() => {
       return __spreadProps(__spreadValues({}, stream), { isDirect: false });
     });
   }
-  var PROVIDER_BUDGET_MS, MAX_STREAMS_PER_PROVIDER, MAX_SAFE_FETCH_BODY_BYTES, RUNTIME_TRUNCATION_SUFFIX, BUILD_HASH, HAS_NATIVE_CRYPTO, _nodeCrypto, RETRY_DELAYS, HAS_NATIVE_TIMERS, HEADERS, USER_AGENT, BASE_HEADERS, _atob, CODEC_PREFERENCE, TV_BUDGET_MS, STRICT_QUALITY_TIERS, DEFAULT_QUALITY_TIER, CODEC_PRIORITY, manifestCache, MANIFEST_CACHE_TTL, FETCH_CACHE_TTL, fetchCache, LANGUAGE_CODE_MAP, MAX_MANIFEST_EXPANSIONS, MAX_SIZE_PROBES, DEFAULT_FETCH_TIMEOUT, TTLCache, caches, DOODSTREAM_MAKEPLAY_PATTERN, DOODSTREAM_PASS_PATTERN, DOODSTREAM_TOKEN_PATTERN, KNOWN_HOST_NAMES, NEVER_CORRECT_DOMAINS, peeledUrls, AD_IFRAME_PATTERNS, VIDEO_IFRAME_SCORE, BASE_URL_FORBIDDEN_PATTERN;
+  var PROVIDER_BUDGET_MS, MAX_STREAMS_PER_PROVIDER, MAX_SAFE_FETCH_BODY_BYTES, RUNTIME_TRUNCATION_SUFFIX, BUILD_HASH, HAS_NATIVE_CRYPTO, _nodeCrypto, RETRY_DELAYS, HAS_NATIVE_TIMERS, HEADERS, USER_AGENT, BASE_HEADERS, _atob, CODEC_PREFERENCE, TV_BUDGET_MS, STRICT_QUALITY_TIERS, DEFAULT_QUALITY_TIER, CODEC_PRIORITY, manifestCache, MANIFEST_CACHE_TTL, FETCH_CACHE_TTL, fetchCache, LANGUAGE_CODE_MAP, MAX_MANIFEST_EXPANSIONS, MAX_SIZE_PROBES, DEFAULT_FETCH_TIMEOUT, KNOWN_HOST_NAMES, NEVER_CORRECT_DOMAINS, peeledUrls, AD_IFRAME_PATTERNS, VIDEO_IFRAME_SCORE, BASE_URL_FORBIDDEN_PATTERN;
   var init_resolvers = __esm({
     "src/utils/resolvers.js"() {
+      init_seekstream_resolver();
       PROVIDER_BUDGET_MS = 45e3;
       MAX_STREAMS_PER_PROVIDER = 80;
       MAX_SAFE_FETCH_BODY_BYTES = 1024 * 1024;
       RUNTIME_TRUNCATION_SUFFIX = "\n...[truncated]";
-      BUILD_HASH = true ? "bdfa2e3b" : "dev";
+      BUILD_HASH = true ? "c978c6ce" : "dev";
       HAS_NATIVE_CRYPTO = typeof crypto !== "undefined" && typeof crypto.subtle !== "undefined" && typeof TextEncoder !== "undefined" && typeof TextDecoder !== "undefined";
       _nodeCrypto = null;
       try {
@@ -1949,47 +2101,6 @@ var __provider = (() => {
       MAX_MANIFEST_EXPANSIONS = 6;
       MAX_SIZE_PROBES = 3;
       DEFAULT_FETCH_TIMEOUT = 15e3;
-      TTLCache = class {
-        constructor(maxSize = 500, ttlMs = 72e5) {
-          this._cache = /* @__PURE__ */ new Map();
-          this._maxSize = maxSize;
-          this._ttlMs = ttlMs;
-        }
-        get(key) {
-          const entry = this._cache.get(key);
-          if (!entry) return null;
-          if (Date.now() - entry.ts > this._ttlMs) {
-            this._cache.delete(key);
-            return null;
-          }
-          return entry.value;
-        }
-        set(key, value) {
-          if (this._cache.size >= this._maxSize) {
-            const firstKey = this._cache.keys().next().value;
-            this._cache.delete(firstKey);
-          }
-          this._cache.set(key, { value, ts: Date.now() });
-        }
-      };
-      caches = {
-        voe: new TTLCache(500, 72e5),
-        fsvid: new TTLCache(500, 6e4),
-        vidzy: new TTLCache(500, 72e5),
-        vidmoly: new TTLCache(500, 72e5),
-        sibnet: new TTLCache(500, 72e5),
-        uqload: new TTLCache(500, 72e5),
-        doodstream: new TTLCache(500, 36e5),
-        lulustream: new TTLCache(500, 36e5),
-        veev: new TTLCache(500, 36e5),
-        // Vidara's token is IP-bound and short-lived: cache briefly or we hand back
-        // a URL that is already dead.
-        vidara: new TTLCache(500, 9e5),
-        seekstreaming: new TTLCache(500, 3e5)
-      };
-      DOODSTREAM_MAKEPLAY_PATTERN = /dsplayer\.hotkeys[^']+'(\/[^']+)'/;
-      DOODSTREAM_PASS_PATTERN = new RegExp("\\/pass_md5\\/[\\w-]+\\/(?<token>[\\w-]+)");
-      DOODSTREAM_TOKEN_PATTERN = /[?&]token=([\w-]+)/;
       KNOWN_HOST_NAMES = [
         { name: "streamtape", domain: "streamtape.com" },
         { name: "sibnet", domain: "sibnet.ru" },
