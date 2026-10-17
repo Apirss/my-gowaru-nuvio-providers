@@ -123,7 +123,7 @@ function isDirectVideoUrl(url) {
     if (u.includes('test-videos.co.uk') || u.includes('sample-videos.com') || u.includes('big_buck_bunny')) return false;
     if (u.includes('/embed') || u.includes('/e/') || u.includes('iframe') || u.includes('index.php')) return false;
     if (u.includes('.m3u8') || u.includes('.mp4') || u.includes('.mkv') || u.includes('.webm') || u.includes('.ts')) return true;
-    if (u.includes('manifest') || u.includes('playlist') || u.includes('/hls/') || u.includes('/hls2/')) return true;
+    if (u.includes('manifest') || u.includes('playlist') || u.includes('/hls/') || u.includes('/hls2/') || u.includes('cloudatacdn')) return true;
     return false;
 }
 
@@ -157,7 +157,7 @@ async function resolveForExo(stream) {
     if (!isExoPlayableUrl(resolved.url)) return null;
     const ro = getUrlOrigin(resolved.url, SITE_ORIGIN);
     return {
-        name: resolved.name || stream.name,
+        name: (resolved.name || stream.name) + ` - ${stream.title}`,
         title: resolved.title || stream.title,
         url: resolved.url,
         quality: resolved.quality || 'HD',
