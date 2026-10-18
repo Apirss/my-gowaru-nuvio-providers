@@ -1,9 +1,3269 @@
 /**
  * aniverse - Built from src/aniverse/
- * Generated: 2026-10-14T23:39:47.137187103Z
+ * Generated: 2026-10-17T23:28:19.329699292Z
  */
-var __provider=(()=>{var pt=Object.defineProperty,mt=Object.defineProperties;var gt=Object.getOwnPropertyDescriptors;var oe=Object.getOwnPropertySymbols;var De=Object.prototype.hasOwnProperty,ke=Object.prototype.propertyIsEnumerable;var Re=(e,t,s)=>t in e?pt(e,t,{enumerable:!0,configurable:!0,writable:!0,value:s}):e[t]=s,C=(e,t)=>{for(var s in t||(t={}))De.call(t,s)&&Re(e,s,t[s]);if(oe)for(var s of oe(t))ke.call(t,s)&&Re(e,s,t[s]);return e},F=(e,t)=>mt(e,gt(t));var yt=(e=>typeof require!="undefined"?require:typeof Proxy!="undefined"?new Proxy(e,{get:(t,s)=>(typeof require!="undefined"?require:t)[s]}):e)(function(e){if(typeof require!="undefined")return require.apply(this,arguments);throw Error('Dynamic require of "'+e+'" is not supported')});var ae=(e,t)=>{var s={};for(var n in e)De.call(e,n)&&t.indexOf(n)<0&&(s[n]=e[n]);if(e!=null&&oe)for(var n of oe(e))t.indexOf(n)<0&&ke.call(e,n)&&(s[n]=e[n]);return s};var Y=(e,t)=>()=>(e&&(t=e(e=0)),t);var wt=(e,t)=>()=>(t||e((t={exports:{}}).exports,t),t.exports);var b=(e,t,s)=>new Promise((n,r)=>{var i=c=>{try{u(s.next(c))}catch(a){r(a)}},o=c=>{try{u(s.throw(c))}catch(a){r(a)}},u=c=>c.done?n(c.value):Promise.resolve(c.value).then(i,o);u((s=s.apply(e,t)).next())});function vt(e){return typeof e=="string"&&e.endsWith(He)}function St(e,t){let s="";try{s=e&&e.headers&&typeof e.headers.get=="function"&&e.headers.get("content-type")||""}catch(r){s=""}return/html/i.test(s)?!0:!s||/text\/plain/i.test(s)?/^\s*<(!doctype|html|\?xml|head|body)/i.test(t||""):!1}function K(e){let t=Number(e)>0?Number(e):0;if(Se)return new Promise(n=>{setTimeout(n,t)});let s=Date.now()+t;return new Promise(n=>{let r=()=>Date.now()>=s?n():Promise.resolve().then(r);r()})}function je(e,t,s={}){let n=Et(`NUVIO_TIMEOUT_${e.toUpperCase().replace(/[^a-z0-9]/g,"_")}`,s.timeout||45e3),r=s.quality||{includeCodec:!0,includeFps:!1},i=s.maxStreams||80;return function(h,d,g,p){return b(this,arguments,function*(u,c,a,l,f={}){let y=c==="movie"?"":` S${a}E${l}`,m=`${e} ${c} ${u}${y}`,w=f&&f.signal?f.signal:null,{signal:v}=$t(w);if(H(v))return[];let S=Date.now();console.log(`[${e}] Request: ${m} (build ${bt})`);try{let A=yield Ve(t(u,c,a,l,{signal:v}),n,m),$=Array.isArray(A)?A:[],T=S+Math.max(5e3,n-5e3),U=new Set,M=[];for(let E of $){if(!E)continue;let D=E.url;if(typeof D=="string"){if(!D||D.includes("[object"))continue;let I=`${D}|${String(E.language||"").toUpperCase()}`;if(U.has(I))continue;U.add(I)}M.push(E)}let _=M.slice(0,i*2),L=yield zt(_,F(C({},r),{budgetDeadline:T})),R=Date.now()-S;return console.log(`[${e}] Done: ${L.length} streams in ${R}ms`),L.slice(0,i)}catch(A){return A&&A.message&&A.message.includes("[Timeout]")?console.warn(`[${e}] ${A.message}`):A&&A.name==="AbortError"?console.warn(`[${e}] Request aborted: ${m}`):console.error(`[${e}] Error:`,A&&A.message||A),[]}})}}function $t(e){let t=qe(),s=t?t.signal:e;if(t&&e&&!e.aborted)try{typeof e.addEventListener=="function"&&e.addEventListener("abort",function(){try{t.abort()}catch(n){}})}catch(n){}return{signal:s,controller:t}}function Tt(e){if(!e||e<=0)return null;let t=e/(1024*1024*1024);if(t>=1)return`${Math.round(t*10)/10} GB`;let s=e/(1024*1024);if(s>=1)return`${Math.round(s*10)/10} MB`;let n=e/1024;return`${Math.round(n)} KB`}function Ct(s){return b(this,arguments,function*(e,t={}){if(!e||!Se)return null;try{let n=yield x(e,{method:"HEAD",headers:t,timeout:5e3});if(!n||!n.ok)return null;let r=pn(n.headers,"content-length");if(!r)return null;let i=Number(r);return!Number.isFinite(i)||i<=0?null:Tt(i)}catch(n){return null}})}function Q(e,t){return Date.now()-(e||0)>(t||_t)}function qe(){try{if(typeof AbortController!="undefined")return new AbortController}catch(e){}return null}function H(e){return e&&(typeof e.aborted=="boolean"?e.aborted:!1)}function Et(e,t){try{if(typeof process!="undefined"&&process.env&&process.env[e]){let s=parseInt(process.env[e],10);return isNaN(s)?t:s}}catch(s){}return t}function Ve(e,t,s="Operation"){return b(this,null,function*(){if(!t||t<=0||!Se)return e;let n,r=new Promise((i,o)=>{n=setTimeout(()=>o(new Error(`[Timeout] ${s} exceeded ${t}ms`)),t)});try{return yield Promise.race([e,r])}finally{clearTimeout(n)}})}function V(e){if(!e||typeof e!="string")return!0;let t=e.toLowerCase();return t.includes("test-videos.co.uk")||t.includes("big_buck_bunny")||t.includes("bigbuckbunny")||t.includes("sample-videos.com")||t.includes("example.com")||t.includes("localhost")||t.includes("/troll/master.m3u8")}function xt(e){if(!e||typeof e!="string")return!1;let t=e.toLowerCase();return V(t)?!1:/\.(mp4|m3u8|mkv|webm|mpd)(\?.*)?$/.test(t)||t.includes("/hls2/")||t.includes("/master.m3u8")}function ze(e){if(!Number.isFinite(e)||e<=0)return ue;let t=le[0],s=Math.abs(e-t);for(let n of le){let r=Math.abs(e-n);r<s&&(s=r,t=n)}return t}function q(e){let t=String(e||"").trim().toLowerCase();if(!t)return`${ue}p`;if(t==="4k"||t==="uhd"||t.includes("2160"))return"2160p";if(t.includes("fhd")||t.includes("fullhd")||t.includes("1080"))return"1080p";if(t.includes("hd")||t.includes("720"))return"720p";let s=t.match(/(\d{3,4})\s*p?/i);return s?`${ze(Number(s[1]))}p`:`${ue}p`}function Rt(e){if(!e||typeof e!="string")return{video:null,audio:null};let t=e.split(",").map(r=>r.trim()),s=null,n=null;for(let r of t){let i=r.split(".")[0].toLowerCase(),o=Mt[i];o&&(["H.264","H.265","AV1","VP9"].includes(o)?s||(s={codec:o,raw:r}):["AAC","AC3","EAC3","Opus"].includes(o)&&(n||(n={codec:o,raw:r})))}return{video:s,audio:n}}function kt(e){let t=We.get(e);return t&&Date.now()-t.ts<Dt?t.data:null}function Ut(e,t){We.set(e,{data:t,ts:Date.now()})}function Lt(e){let t=Z.get(e);return t&&Date.now()-t.ts<It?t.data:null}function Ft(e,t){if(Z.size>=300){let s=Math.ceil(60),n=[...Z.entries()].sort((r,i)=>r[1].ts-i[1].ts).slice(0,s);for(let[r]of n)Z.delete(r)}Z.set(e,{data:t,ts:Date.now()})}function fe(e){let s=q(e).toLowerCase().match(/(\d{3,4})p/),n=s?Number(s[1]):ue,r=ze(n);return le.length-1-le.indexOf(r)}function Bt(e,t,s,n){let r=[],i=q(t);return i&&!(e||"").includes(i)&&r.push(i),s&&s!=="H.264"&&r.push(s),n&&n>30&&r.push(`${n}fps`),r.length===0?e:`${e} [${r.join(" ")}]`}function ve(e){if(!e||typeof e!="string")return null;let t=e.toLowerCase();return t.includes(".m3u8")||t.includes("/hls/")||t.includes("/hls2/")||t.includes("master.m3u8")||t.includes("playlist.m3u8")?"hls":t.includes(".mpd")?"dash":/[?&]format=hls\b/.test(t)||/\/v1\/(anime|tv|movie)\?/.test(t)?"hls":t.includes(".mp4")?"mp4":t.includes(".mkv")?"mkv":t.includes(".webm")?"webm":t.includes(".ts")&&!t.includes("test")&&!t.includes("textures")?"hls":null}function Ot(e){let t=q(e.quality||"HD"),s=[t];if(e.codec){let n=String(e.codec).toUpperCase();n&&!t.toUpperCase().includes(n)&&s.push(n)}if(e.audioCodec){let n=String(e.audioCodec).toUpperCase();n&&!s.some(r=>r.toUpperCase()===n)&&s.push(n)}return s.join(" ")}function Nt(e,t){if(!e)return e;let s=[];return t.codec&&s.push(String(t.codec).toUpperCase()),t.audioCodec&&s.push(String(t.audioCodec).toUpperCase()),s.length===0?e:`${e} ${s.join(" ")}`}function Pt(e){if(!e)return null;let t=String(e).trim().toUpperCase();return t?Ie[t]?Ie[t]:t.toLowerCase():null}function Le(e){if(e.language)return e.language;let s=(e.name||"").match(/\((\w+)\)/);if(s){let n=s[1].toUpperCase();if(["VF","VOSTFR","VO","VOSTF","VOA","VOST"].includes(n))return n}return null}function Fe(s){return b(this,arguments,function*(e,t={}){var g,p,y,m,w,v,S;if(!e||!e.url||typeof e.url!="string")return[];let n=e.url,r=n.toLowerCase();if(!r.includes(".m3u8")&&!r.includes("/hls/"))return[F(C({},e),{quality:q(e.quality||"HD"),type:ve(n)})];let i=n;if(!t.forceRefresh){let A=kt(i);if(A)return A}let o=null;try{o=yield Ve(x(n,{headers:e.headers||{},timeout:t.manifestTimeout||12e3}),t.manifestTimeout||12e3,"manifest-parse")}catch(A){o=null}if(!o)return[F(C({},e),{quality:q(e.quality||"HD"),type:"hls"})];let u=yield o.text();if(o.truncated||vt(u))return[F(C({},e),{quality:q(e.quality||"HD"),type:"hls"})];if(!/#EXT-X-STREAM-INF/i.test(u))return[F(C({},e),{quality:q(e.quality||"HD"),type:"hls"})];let c=u.split(/\r?\n/).map(A=>A.trim()).filter(Boolean),a=[];for(let A=0;A<c.length;A++){let $=c[A];if(!$.startsWith("#EXT-X-STREAM-INF:"))continue;let T=c[A+1];if(!T||T.startsWith("#"))continue;let U=(g=$.match(/RESOLUTION=\d+x(\d+)/i))==null?void 0:g[1],M=(p=$.match(/FRAME-RATE=([0-9.]+)/i))==null?void 0:p[1],_=(y=$.match(/BANDWIDTH=(\d+)/i))==null?void 0:y[1],L=(m=$.match(/CODECS="([^"]+)"/i))==null?void 0:m[1],R=U?`${U}p`:null;if(!R&&_){let k=Number(_);k>=8e6?R="2160p":k>=5e6?R="1080p":k>=25e5?R="720p":k>=12e5?R="480p":R="360p"}!R&&M&&(R=`${q(e.quality||"HD")}`);let E=Rt(L),D=M?Math.round(parseFloat(M)):null,I=T;try{I=new URL(T,n).toString()}catch(k){}a.push(F(C({},e),{url:I,quality:q(R||e.quality||"HD"),type:"hls",codec:((w=E.video)==null?void 0:w.codec)||null,audioCodec:((v=E.audio)==null?void 0:v.codec)||null,fps:D,bandwidth:_?parseInt(_):null,title:Bt(e.title||e.name||"Stream",R||e.quality||"HD",t.includeCodec!==!1?(S=E.video)==null?void 0:S.codec:null,t.includeFps!==!1?D:null)}))}if(a.length===0)return[F(C({},e),{quality:q(e.quality||"HD"),type:"hls"})];let l=[],f=new Set;for(let A of a)f.has(A.url)||(f.add(A.url),l.push(A));l.sort((A,$)=>fe($.quality)-fe(A.quality));let h=t.maxVariants||l.length,d=l.slice(0,h);return Ut(i,d),d})}function Ht(e,t){if(!t||!e.length)return e;let s=t.toUpperCase();return e.some(r=>{var i;return((i=r.codec)==null?void 0:i.toUpperCase())===s})?e.filter(r=>{var i;return((i=r.codec)==null?void 0:i.toUpperCase())===s}):e}function jt(e){return[...e].sort((t,s)=>{let n=fe(s.quality)-fe(t.quality);if(n!==0)return n;if(t.codec&&s.codec){let r=i=>Ue.indexOf(i)>=0?Ue.indexOf(i):99;return r(t.codec)-r(s.codec)}return 0})}function Be(e){let t=Number(e&&e.budgetDeadline);return t>0&&Date.now()>t}function zt(s){return b(this,arguments,function*(e,t={}){let n=Array.isArray(e)?e:[],r=[],i=Number(t.maxManifestFetches)>0?Number(t.maxManifestFetches):qt,o=t.skipManifestExpansion===!0,u=0,c=yield Promise.allSettled(n.map(p=>{let m=(p&&typeof p.url=="string"?p.url:"").toLowerCase();return m.includes(".m3u8")||m.includes("/hls/")?o||Be(t)||u>=i?Promise.resolve([F(C({},p),{quality:q(p&&p.quality||"HD"),type:"hls"})]):(u++,Fe(p,t)):Fe(p,t)}));for(let p=0;p<c.length;p++){let y=c[p],m=n[p];if(y.status==="fulfilled")for(let w of y.value)r.push(w);else m&&r.push(F(C({},m),{quality:q(m.quality||"HD"),type:ve(m.url)}))}let a=[],l=new Set;for(let p of r){if(!(p!=null&&p.url)||V(p.url))continue;let y=p.language||Le(p)||"",m=`${p.url}|${String(y).toUpperCase()}`;l.has(m)||(l.add(m),a.push(p))}let f=jt(a);f=f.map(p=>{let y=Le(p)||p.language||null,m=Pt(y),w=p.title||p.name,v=p.title;y&&m&&w&&String(y).toUpperCase()!==m.toUpperCase()&&!w.toUpperCase().includes(String(y).toUpperCase())&&(v=`${w} [${String(y).toUpperCase()}]`);let S=Ot(p);return F(C(C(C({},p),v!==p.title?{title:v}:{}),S!==p.quality?{quality:S}:{}),{type:p.type||ve(p.url),language:m})});let h=/\.(mp4|mkv|webm)(\?.*)?$/i,g=t.sizeProbe!==!1&&!Be(t)?f.filter(p=>!p.size&&p.url&&h.test(p.url)).slice(0,Vt):[];if(g.length>0){let p=yield Promise.allSettled(g.map(y=>Ct(y.url,y.headers)));for(let y=0;y<g.length;y++){let m=p[y].status==="fulfilled"?p[y].value:null;m&&(g[y].size=Nt(m,g[y]))}}return t.preferredCodec?Ht(f,t.preferredCodec):f})}function x(s){return b(this,arguments,function*(e,t={}){let n=Date.now(),r=15e3,i=(t.method||"GET").toUpperCase(),o="";if(t.headers&&typeof t.headers=="object"){let a=Object.keys(t.headers).sort();a.length&&(o="|"+a.map(l=>`${l.toLowerCase()}=${String(t.headers[l]).slice(0,80)}`).join("&"))}let u=i+"|"+e+o;if(i==="GET"){let a=Lt(u);if(a)return{text:()=>Promise.resolve(a.bodyText),json:()=>b(null,null,function*(){try{return JSON.parse(a.bodyText)}catch(l){throw l}}),ok:a.ok,status:a.status,url:a.finalUrl||e,headers:a.headers||{},truncated:!1}}try{let c=t,{timeout:a,signal:l}=c,f=ae(c,["timeout","signal"]),h=a>0?a:Wt;if(H(l))return null;let d=F(C({},f),{headers:C(C({},de),f.headers),redirect:"follow"}),g=typeof AbortSignal!="undefined"&&typeof AbortSignal.timeout!="undefined";if(h>0&&g){let S=AbortSignal.timeout(h);if(l){let A=qe();if(A){d.signal=A.signal;let $=()=>{A.abort()};try{l.addEventListener("abort",$)}catch(T){}try{S.addEventListener("abort",$)}catch(T){}}else d.signal=l}else d.signal=S}else l&&(d.signal=l);let p=yield fetch(e,d),y=Date.now()-n;if(y>r&&console.warn(`[safeFetch] Slow request (${y}ms): ${(e||"").slice(0,120)}`),!p)return null;let m=p.status;if(m===0)return null;let w="",v=!1;try{let S=yield p.text();S&&S.endsWith(He)?(v=!0,w=S):S&&S.length>=1048576?(v=!0,console.warn(`[safeFetch] Response truncated (${S.length} bytes > 1048576): ${(e||"").slice(0,100)}`),w=S.slice(0,1048576)):w=S||""}catch(S){w=""}return v&&St(p,w)?(console.warn(`[safeFetch] HTML body truncated \u2192 refusing partial parse: ${(e||"").slice(0,100)}`),null):(i==="GET"&&m>=200&&m<300&&!v&&Ft(u,{bodyText:w,ok:!0,status:m,finalUrl:p.url,headers:p.headers}),{text:()=>Promise.resolve(w),json:()=>b(null,null,function*(){try{return JSON.parse(w)}catch(S){throw S}}),ok:p.ok,status:m,url:p.url,headers:p.headers,truncated:v})}catch(a){let l=Date.now()-n;return l>r&&console.warn(`[safeFetch] Slow request failed (${l}ms): ${(e||"").slice(0,120)}`),null}})}function P(e){try{if(!e.includes("p,a,c,k,e,d"))return e;let t=i=>{let o=[],u=0;for(;;){let c=i.indexOf("eval(function(p,a,c,k,e,d)",u);if(c===-1)break;let a=c,l=0,f=!1,h=!1,d=!1;for(;a<i.length;a++){let g=i[a];if(d){d=!1;continue}if(g==="\\"){d=!0;continue}if(!h&&g==="'"?f=!f:!f&&g==='"'&&(h=!h),!(f||h)){if(g==="(")l++;else if(g===")"&&(l--,l===0)){a++;break}}}a>c&&o.push(i.slice(c,a)),u=a}return o},s=i=>{let o=($,T)=>{let U=$[T];if(U!=="'"&&U!=='"')return null;let M=T+1,_="",L=!1;for(;M<$.length;M++){let R=$[M];if(L){_+=R,L=!1;continue}if(R==="\\"){L=!0;continue}if(R===U)return{value:_,end:M+1};_+=R}return null},u=($,T)=>{for(;T<$.length&&/\s/.test($[T]);)T++;return T},c=($,T)=>{T=u($,T);let U=$.slice(T).match(/^\d+/);return U?{value:parseInt(U[0],10),end:T+U[0].length}:null},a=i.indexOf("}(");if(a===-1)return null;let l=a+2;l=u(i,l);let f=o(i,l);if(!f)return null;let h=f.value;if(l=u(i,f.end),i[l]!==",")return null;let d=c(i,l+1);if(!d)return null;let g=d.value;if(l=u(i,d.end),i[l]!==",")return null;let p=c(i,l+1);if(!p)return null;let y=p.value;if(l=u(i,p.end),i[l]!==",")return null;let m=o(i,u(i,l+1));if(!m)return null;let w=i.slice(m.end,m.end+20);if(!/\.split\(\s*['"]\|['"]\s*\)/.test(w))return null;let v=m.value.split("|"),S=$=>($<g?"":S(parseInt($/g,10)))+(($=$%g)>35?String.fromCharCode($+29):$.toString(36)),A={};for(;y--;)A[S(y)]=v[y]||S(y);return h.replace(/\b\w+\b/g,$=>A[$]||$)},n=e,r=t(e);for(let i of r)try{let o=s(i);o&&(n=n.replace(i,o))}catch(o){}return n}catch(t){return e}}function Jt(e){return b(this,null,function*(){try{let t=yield x(e,{headers:{Referer:"https://video.sibnet.ru/"}});if(!t)return{url:e};let s=yield t.text(),n=null,r=s.match(/file\s*:\s*["']([^"']*\.mp4[^"']*)['"]/i);if(r&&(n=r[1]),!n){let i=s.match(/src\s*:\s*["']([^"']*\.mp4[^"']*)['"]/i);i&&(n=i[1])}if(!n){let i=s.match(/player\.src\(\s*\[\s*\{\s*src\s*:\s*["']([^"']+\.mp4[^"']*)['"]/i);i&&(n=i[1])}if(!n){let i=s.match(/["']((?:https?:)?\/\/[^"'\s]+\.mp4[^"'\s]*)["']/i);i&&(n=i[1])}if(!n)return{url:e};n.startsWith("//")?n="https:"+n:n.startsWith("/")&&(n="https://video.sibnet.ru"+n);try{let i=yield x(n,{method:"HEAD",headers:{Referer:"https://video.sibnet.ru/"},timeout:5e3});i&&i.url&&i.url!==n&&i.url.includes(".mp4")&&(n=i.url)}catch(i){}return{url:n,headers:{Referer:"https://video.sibnet.ru/"}}}catch(t){}return{url:e}})}function Kt(e){return b(this,null,function*(){var t,s;try{let n=((t=e.match(/^https?:\/\/([^/]+)/))==null?void 0:t[1])||"",r=n?`https://${n}/`:"https://vidmoly.biz/",i=["biz","net","ru","is","to"],o=[e];for(let c of i){let a=e.replace(/vidmoly\.(net|to|ru|is|biz|me)/,`vidmoly.${c}`);a!==e&&o.push(a)}let u=[...new Set(o)].slice(0,4);for(let c of u)try{let a=((s=c.match(/^https?:\/\/([^/]+)/))==null?void 0:s[1])||"",l=a?`https://${a}/`:r,f=yield x(c,{headers:{Referer:l,Origin:l}});if(!f||!f.ok)continue;let h=(m,w)=>{var S;let v=m&&m.url&&((S=m.url.match(/^https?:\/\/([^/]+)/))==null?void 0:S[1])||"";return v?`https://${v}/`:w},d=yield f.text(),g=/window\.location\.replace/.test(d);if(d.length<500&&!g||d.includes("finisheddaysflamboyant"))continue;(d.includes("p,a,c,k,e,d")||d.includes("eval(function"))&&(d=P(d));let p=d.match(/file\s*:\s*["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/i)||d.match(/sources\s*:\s*\[["']([^"']+\.(?:m3u8|mp4)[^"']*)["']\]/i)||d.match(/["'](https?:\/\/[^"']+\.(?:m3u8|mp4)[^"']*)["']/i);if(p){let m=h(f,l);return{url:p[1],headers:{Referer:m,Origin:m}}}let y=d.match(/window\.location\.replace\(['"]([^'"]+)['"]\)/)||d.match(/window\.location\.href\s*=\s*['"]([^'"]+)['"]/);if(y&&y[1]!==c&&(f=yield x(y[1],{headers:{Referer:l,Origin:l}}),f)){d=yield f.text(),(d.includes("p,a,c,k,e,d")||d.includes("eval(function"))&&(d=P(d));let m=d.match(/file\s*:\s*["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/i)||d.match(/sources\s*:\s*\[["']([^"']+\.(?:m3u8|mp4)[^"']*)["']\]/i)||d.match(/["'](https?:\/\/[^"']+\.(?:m3u8|mp4)[^"']*)["']/i);if(m){let w=h(f,l);return{url:m[1],headers:{Referer:w,Origin:w}}}}}catch(a){}}catch(n){}return{url:e}})}function Xt(e){return b(this,null,function*(){var t;try{let s=(t=e.match(/\/video\/embed\/(\d+)/))==null?void 0:t[1];if(!s)return{url:e};let n=`https://my.mail.ru/+/video/meta/${s}`,r=yield x(n,{headers:{Referer:e,Accept:"application/json"}});if(!r||!r.ok)return{url:e};let i=null;try{i=JSON.parse(yield r.text())}catch(l){return{url:e}}let c=[...Array.isArray(i==null?void 0:i.videos)?i.videos:[]].sort((l,f)=>(parseInt(f.key,10)||0)-(parseInt(l.key,10)||0)).find(l=>l&&l.url);return c?{url:c.url.startsWith("//")?"https:"+c.url:c.url,headers:{Referer:"https://my.mail.ru/"},quality:c.key||void 0}:{url:e}}catch(s){}return{url:e}})}function Gt(e){return b(this,null,function*(){var h;let t=e.replace(/^https?:\/\/[^/]+/,""),s=((h=e.match(/^https?:\/\/([^/]+)/))==null?void 0:h[1])||"uqload.co",n=[s];s.endsWith(".bz")&&n.push("uqload.co","uqload.to"),s.endsWith(".to")&&n.push("uqload.co"),s.endsWith(".cx")&&n.push("uqload.co","uqload.vc");let r=[...new Set(n)],i=["file is no longer available","expired or has been deleted","file no longer exists"],o=d=>{let g=d.toLowerCase();return i.some(p=>g.includes(p))},u=d=>d.length<200&&/restricted for this domain/i.test(d),c=0,a=0,l=[`https://${r[0]}/`,"https://lecteurvideo.com/",""],f=d=>d.match(/file\s*:\s*["']([^"']+\.(?:mp4|m3u8)[^"']*)["']/i)||d.match(/sources\s*:\s*\[[^\]]*?\{[^}]*?file\s*:\s*["']([^"']+\.(?:mp4|m3u8)[^"']*)["']/i)||d.match(/sources\s*:\s*\[["']([^"']+\.(?:mp4|m3u8)[^"']*)["']\]/i)||d.match(/["'](https?:\/\/[^"']*\/hls\d?\/[^"']*\.m3u8[^"']*)["']/i)||d.match(/["'](https?:\/\/[^"']+\.mp4[^"']*)["']/i);for(let d of r){let g=`https://${d}${t}`;for(let p of l)try{let y=C({},de);p&&(y.Referer=p);let m=yield x(g,{headers:y});if(!m)continue;let w=yield m.text();if(o(w))return console.warn(`[Resolver] uqload embed dead (expired/deleted): ${e.slice(0,80)}`),{url:e,isDead:!0};if(c++,u(w)){a++;continue}if(!w.includes("p,a,c,k,e,d")&&!w.includes("eval(function")&&!f(w))continue;(w.includes("p,a,c,k,e,d")||w.includes("eval(function"))&&(w=P(w));let v=f(w);if(v){let S={Referer:`https://${d}/`};return{url:v[1],headers:S}}}catch(y){}}return c>0&&a===c?(console.warn(`[Resolver] uqload embed dead (restricted on all referers): ${e.slice(0,80)}`),{url:e,isDead:!0}):{url:e}})}function Yt(e){if(!e||e.indexOf("application/json")<0)return null;let t=e.match(/<script[^>]*type=["']application\/json["'][^>]*>([\s\S]*?)<\/script>/);if(!t)return null;let s=null;try{let i=JSON.parse(t[1]);Array.isArray(i)&&typeof i[0]=="string"?s=i[0]:typeof i=="string"&&(s=i)}catch(i){return null}if(!s)return null;let n=i=>{let o=String(i||"").replace(/[^A-Za-z0-9+/=]/g,""),u=o.length%4,c=u?o+"=".repeat(4-u):o;return be(c)},r=i=>i.replace(/[a-zA-Z]/g,o=>{let u=o<="Z"?65:97;return String.fromCharCode((o.charCodeAt(0)-u+13)%26+u)});try{let i=r(s);i=n(i);let o="";for(let l=0;l<i.length;l++)o+=String.fromCharCode(i.charCodeAt(l)-3);let u=o.split("").reverse().join(""),c=n(u),a=JSON.parse(c);if(a&&typeof a=="object"&&typeof a.source=="string"&&/^https?:\/\//.test(a.source))return a}catch(i){}return null}function Oe(e){return b(this,null,function*(){try{let t=yield x(e);if(!t)return{url:e};let s=yield t.text();if(s.includes('<div id="root">')&&s.includes("/assets/index-"))return{url:e};let n=e;for(let o=0;o<3;o++){let u=s.match(/window\.location\.href\s*=\s*['"]([^'"]+)['"]/);if(!u||u[1]===n)break;n=u[1];let c=yield x(n);if(!c)break;s=yield c.text()}let r=Yt(s);if(r){let o=String(r.direct_access_url||""),c=String(r.source||"")||o;if(c&&!V(c))return{url:c,headers:{Referer:n+"/"}};if(o&&!V(o))return{url:o,headers:{Referer:n+"/"}}}(s.includes("p,a,c,k,e,d")||s.includes("eval(function"))&&(s=P(s));let i=s.match(/'hls'\s*:\s*'([^']+)'/)||s.match(/"hls"\s*:\s*"([^"]+)"/)||s.match(/file\s*:\s*["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/i)||s.match(/sources\s*:\s*\[["']([^"']+\.(?:m3u8|mp4)[^"']*)["']\]/i)||s.match(/https?:\/\/[^"']+\.m3u8[^"']*/);if(i){let o=i[1]||i[0];return o.includes("base64")&&(o=be(o.split(",")[1]||o)),o.includes("test-videos.co.uk")||V(o)?{url:e}:{url:o,headers:{Referer:n}}}}catch(t){}return{url:e}})}function Zt(e){return b(this,null,function*(){try{let t=(e.match(/^https?:\/\/([^/]+)/)||[])[1]||"",s=t?`https://${t}/`:"https://fsvid.lol/",n=yield x(e,{headers:{Referer:s}});if(!n)return{url:e};let r=yield n.text();(r.includes("p,a,c,k,e,d")||r.includes("eval(function"))&&(r=P(r));let i=null,o=t?t.split("/")[0]:(s.split("//")[1]||"").replace(/\//g,""),u=r.match(/\}\)\(["']([A-Za-z0-9+/=_-]{50,})["']\)/);if(u&&r.includes("reverse().join")){let a=u[1].replace(/-/g,"+").replace(/_/g,"/"),l="";try{l=atob(a)}catch(f){}if(l){let f=0;for(let d=0;d<o.length;d++)f=f+o.charCodeAt(d)&255;let h=l.split("").reverse().join("");for(let d=0;d<256;d++){let g="";for(let p=0;p<h.length;p++){let y=61+p*89+f+d&255;g+=String.fromCharCode(h.charCodeAt(p)^y)}if(/^https?:\/\//.test(g)&&g.includes(".m3u8")&&!g.includes("/troll/")){i=g;break}}}}if(!i){let a=/(?:var|let|const)\s*k=\[([0-9,\s]+)\],b=atob\(s\)[\s\S]*?return\s+\w+\}\)\(["']([A-Za-z0-9+/=_-]+)["']\)/g,l;for(;(l=a.exec(r))!==null;){let f=l[1].split(",").map(p=>parseInt(p,10)),h=l[2].replace(/-/g,"+").replace(/_/g,"/"),d="";try{d=atob(h)}catch(p){continue}let g="";for(let p=0;p<d.length;p++)g+=String.fromCharCode(d.charCodeAt(p)^f[p%f.length]);if(g.startsWith("http")&&g.includes(".m3u8")&&!g.includes("/troll/")){i=g;break}}}if(!i)return{url:e};let c=e.includes("vidzy")?"https://vidzy.live/":"https://fsvid.lol/";return{url:i,headers:{Referer:c}}}catch(t){}return{url:e}})}function Qt(e){return b(this,null,function*(){try{let t=yield x(e);if(!t)return{url:e};let s=yield t.text();s.includes("p,a,c,k,e,d")&&(s=P(s));let n=s.match(/robotlink['"]\)\.innerHTML\s*=\s*['"]([^'"]+)['"]\s*\+\s*([^;]+)/);if(n){let r="https:"+n[1],i=n[2].split("+");for(let o of i){let u=o.match(/['"]([^'"]+)['"]/);if(u){let c=u[1],a=o.match(/substring\((\d+)\)/);a&&(c=c.substring(parseInt(a[1]))),r+=c}}return{url:r,headers:{Referer:"https://streamtape.com/"}}}}catch(t){}return{url:e}})}function en(e){return b(this,null,function*(){try{if(e.includes("daisukianime")){let i=e.match(/[?&]id=([a-z0-9]+)/i);i&&(e=`https://sendvid.com/embed/${i[1]}`)}let t=e.includes("/embed/")?e:e.replace(/sendvid\.com\/([a-z0-9]+)/i,"sendvid.com/embed/$1"),s=yield x(t,{headers:{Referer:"https://sendvid.com/"}});if(!s)return{url:e};if(s.status===502||s.status===503)return console.warn(`[Sendvid] Service temporarily unavailable (${s.status}): ${t.slice(0,60)}`),{url:t,isDirect:!1};let n=yield s.text(),r=n.match(/video_source\s*:\s*["']([^"']+\.mp4[^"']*)["|']/)||n.match(/source\s+src=["']([^"']+\.mp4[^"']*)["|']/)||n.match(/<source[^>]+src=["']([^"']+\.(?:mp4|m3u8)[^"']*)["']/)||n.match(/file\s*:\s*["']([^"']+\.(?:mp4|m3u8)[^"']*)["|']/)||n.match(/["'](https?:\/\/[^"']+\.mp4[^"']*)["']/);if(r)return{url:r[1],headers:{Referer:"https://sendvid.com/"}}}catch(t){}return{url:e}})}function tn(e){return b(this,null,function*(){try{let t=yield x(e);if(!t)return{url:e};let s=yield t.text();s.includes("p,a,c,k,e,d")&&(s=P(s));let n=s.match(/sources\s*:\s*\[["']([^"']+\.(?:m3u8|mp4)[^"']*)["']\]/)||s.match(/file\s*:\s*["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/);if(n){let r=n[1];return r.includes("base64")&&(r=be(r.split(",")[1]||r)),{url:r,headers:{Referer:e}}}}catch(t){}return{url:e}})}function nn(e){return b(this,null,function*(){try{let t=yield x(e);if(!t)return{url:e};let n=(yield t.text()).match(/["'](https?:\/\/[^"']+\.m3u8[^"']*)["']/);if(n)return{url:n[1],headers:{Referer:e}}}catch(t){}return{url:e}})}function sn(e){return b(this,null,function*(){var t,s;try{let n=((t=e.match(/https?:\/\/([^\/]+)/))==null?void 0:t[1])||"dood.to",r=e,i=yield x(r);if(!i)return{url:e};let o=i.url||r,u=((s=o.match(/https?:\/\/([^\/]+)/))==null?void 0:s[1])||n,c=yield i.text();u!==n&&(r=o),i=null,c.includes("eval(function(p,a,c,k,e,d)")&&(c=P(c));let a=c.match(/\$\.get\(['"]\/pass_md5\/([^'"]+)['"]/)||c.match(/pass_md5\/([^'"\s]+)['"]/);if(a){let l=a[1],f=`https://${u}/pass_md5/${l}`,h=yield x(f,{headers:{Referer:r}});if(h&&h.ok){let d=yield h.text(),g=Math.random().toString(36).substring(2,12);return{url:d+g+"?token="+l+"&expiry="+Date.now(),headers:{Referer:`https://${u}/`}}}}}catch(n){}return{url:e}})}function rn(e){return b(this,null,function*(){try{let t=yield x(e,{headers:{Referer:"https://www.myvi.ru/"}});if(!t)return{url:e};let s=yield t.text();s.includes("eval(function(p,a,c,k,e,d)")&&(s=P(s));let n=s.match(/["'](?:file|src|url|stream_url)["']\s*:\s*["']([^"']+\.(?:mp4|m3u8)[^"']*)["']/)||s.match(/["'](https?:\/\/[^"']+\.(?:mp4|m3u8)[^"']*)["']/)||s.match(/source\s+src=["']([^"']+\.(?:mp4|m3u8)[^"']*)/);if(n)return{url:n[1],headers:{Referer:"https://www.myvi.ru/"}};let r=e.match(/\/(?:embed\/|watch\/|video\/)([a-zA-Z0-9_-]+)/);if(r){let i=`https://www.myvi.ru/api/video/${r[1]}`,o=yield x(i,{headers:{Referer:e}});if(o){let c=(yield o.text()).match(/["'](?:url|src|file)["']\s*:\s*["']([^"']+\.(?:mp4|m3u8)[^"']*)["']/);if(c)return{url:c[1],headers:{Referer:"https://www.myvi.ru/"}}}}}catch(t){}return{url:e}})}function on(e){return b(this,null,function*(){var t;try{let s=((t=e.match(/^https?:\/\/[^/]+/))==null?void 0:t[0])||"https://younetu.org",n=yield x(e,{headers:{Referer:s+"/"}});if(!n)return{url:e};let r=yield n.text();(r.includes("p,a,c,k,e,d")||r.includes("eval(function"))&&(r=P(r));let i=r.match(/src\s*:\s*["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/i)||r.match(/file\s*:\s*["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/i)||r.match(/sources\s*:\s*\[["']([^"']+\.(?:m3u8|mp4)[^"']*)["']\]/i)||r.match(/["'](https?:\/\/[^"']+\.(?:m3u8|mp4)[^"']*)["']/i);if(i)return{url:i[1],headers:{Referer:s+"/"}}}catch(s){}return{url:e}})}function an(e){return b(this,null,function*(){try{let t=yield x(e,{headers:{Referer:"https://vidoza.net/"}});if(!t)return{url:e};let s=yield t.text(),n=s.match(/src\s*:\s*["']([^"']+\.(?:mp4|m3u8)[^"']*)["']/i)||s.match(/file\s*:\s*["']([^"']+\.(?:mp4|m3u8)[^"']*)["']/i)||s.match(/["'](https?:\/\/[^"']+\.(?:mp4|m3u8)[^"']*)["']/i);if(n)return{url:n[1],headers:{Referer:"https://vidoza.net/"}}}catch(t){}return{url:e}})}function cn(e){return b(this,null,function*(){var t,s,n;try{let r=((t=e.match(/^https?:\/\/[^/]+/))==null?void 0:t[0])||"https://lecteur2.xtremestream.xyz",i=yield x(e,{headers:{Referer:"https://lecteurvideo.com/"},timeout:12e3});if(!i)return{url:e};let o=yield i.text();if(!o||o.length<100)return{url:e};let u=(s=o.match(/var\s+video_id\s*=\s*[`"']([A-Za-z0-9_-]+)[`"']/))==null?void 0:s[1],c=(n=o.match(/var\s+m3u8_loader_url\s*=\s*[`"']([^`"']+)[`"']/))==null?void 0:n[1];if(!u||!c)return{url:e};let a=c+u,l=yield x(a,{headers:{Referer:r+"/"},timeout:12e3});if(!l)return{url:e};let f=yield l.text();return!f||!f.includes("#EXTM3U")?{url:e}:{url:a,headers:{Referer:r+"/"}}}catch(r){}return{url:e}})}function ln(e){return b(this,null,function*(){try{let t=yield x(e);if(!t)return{url:e};let s=yield t.text();s.includes("p,a,c,k,e,d")&&(s=P(s));let n=s.match(/file\s*:\s*["']([^"']+\.(?:mp4|m3u8)[^"']*)["']/);if(n)return{url:n[1],headers:{Referer:e}}}catch(t){}return{url:e}})}function Ne(e){return b(this,null,function*(){var t;try{let s=((t=e.match(/^https?:\/\/[^/]+/))==null?void 0:t[0])||e,n=yield x(e,{headers:{Referer:s+"/"}});if(!n)return{url:e};let r=yield n.text();(r.includes("p,a,c,k,e,d")||r.includes("eval(function"))&&(r=P(r));let i=r.match(/file\s*:\s*["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/i)||r.match(/sources\s*:\s*\[[^\]]*?["'](https?:\/\/[^"']+\.(?:m3u8|mp4)[^"']*)["']/i)||r.match(/["'](https?:\/\/[^"']+\.(?:m3u8|mp4)[^"']*)["']/i);if(i)return{url:i[1],headers:{Referer:s+"/"}}}catch(s){}return{url:e}})}function un(e){return b(this,null,function*(){var t,s;try{let n=((t=e.match(/^https?:\/\/[^/]+/))==null?void 0:t[0])||"https://lecteurvideo.com",r=((s=e.match(/[?&]url=([^&]+)/))==null?void 0:s[1])||"",o={"wookafr.tel":"https://wookafr.center","wookafr.to":"https://wookafr.center","wookafr.app":"https://wookafr.center","wookafr.fyi":"https://wookafr.center"}[r]||`https://${r}`||n+"/",u=yield x(e,{headers:{Referer:o,Origin:o.replace(/\/$/,"")},timeout:12e3});if(!u)return{url:e};let c=yield u.text();(c.includes("p,a,c,k,e,d")||c.includes("eval(function"))&&(c=P(c));let a=c.match(/file\s*:\s*["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/i)||c.match(/sources\s*:\s*\[["']([^"']+\.(?:m3u8|mp4)[^"']*)["']\]/i)||c.match(/src\s*:\s*["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/i)||c.match(/data-src=["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/i);if(a){let m=a[1];if(m.startsWith("//")&&(m="https:"+m),!V(m))return{url:m,headers:{Referer:n+"/"}}}let l=[...c.matchAll(/href=["'](https?:\/\/[^"']+)["']/gi)].map(m=>m[1]).concat([...c.matchAll(/["'](https?:\/\/[^"']+)["']/gi)].map(m=>m[1])).filter(m=>!m.includes("lecteurvideo.com")&&!m.includes("youtube.com")&&!m.includes("googlevideo.com")&&!m.includes("fonts.googleapis.com")&&!m.includes("jsdelivr.net")&&!m.includes("cloudflareinsights.com")&&!m.includes("themoviedb.org")&&!m.includes("imagizer.imageshack.com")&&!m.includes("cloudflare")&&!m.includes("plyr.")),f=/^https?:\/\/[^"']+\.(?:m3u8|mp4|mkv|webm)(?:\?[^"']*)?$/i,h=l.find(m=>f.test(m)&&!V(m));if(h)return{url:h,headers:{Referer:n+"/"}};let d=["megaup.net","1fichier.com"];for(let m of d){let w=l.find(v=>v.includes(m));if(w)return{url:w,headers:{Referer:n+"/"}}}let g=["sibnet.ru","sendvid.com","dood.to","listeamed.net","voe.sx","veev.to","filemoon.sx"];for(let m of g){let w=l.find(v=>v.includes(m));if(w)return{url:w,headers:{Referer:n+"/"}}}let p=c.match(/<iframe[^>]+src=["'](https?:\/\/[^"']+)["']/i);if(p){let m=p[1];if(!m.includes("lecteurvideo.com")&&!m.includes("youtube.com"))return{url:m,headers:{Referer:n+"/"}}}let y=l.find(m=>m.includes("1fichier.com")||m.includes("megaup.net")||m.includes("filemoon")||m.includes("voe.sx")||m.includes("veev.to")||m.includes("listeamed.net"));if(y)return{url:y,headers:{Referer:n+"/"}}}catch(n){}return{url:e}})}function fn(e){return b(this,null,function*(){return{url:e}})}function dn(e){return b(this,null,function*(){try{let t=yield x(e,{headers:{Referer:"https://up4fun.top/"}});if(!t)return null;let s=yield t.text(),n=s.match(/["'](https?:\/\/[^"']+\.(?:m3u8|mp4)[^"']*)["']/i)||s.match(/file\s*:\s*["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/i);if(n)return{url:n[1],headers:{Referer:"https://up4fun.top/"}}}catch(t){}return null})}function ce(e){if(!e||typeof e!="string")return e;let t=e.match(/^https?:\/\/([^\/]+)(.*)/);if(!t)return e;let s=t[1].toLowerCase();if(hn.some(h=>s===h||s.endsWith("."+h)))return e;let n=t[1].toLowerCase(),r=n.split("."),i=r.length>=2?r[r.length-2]:r[0],o=ye.some(h=>n.endsWith("."+h.domain)),u=r.length>2,c=e,a=o;if(!a){for(let h of ye)if(i.includes(h.name)&&Math.abs(i.length-h.name.length)<=4){if(u){if(i===h.name)continue;let g=r[r.length-3];if(/^[a-z0-9]{1,6}$/i.test(g)){console.log(`[Resolver] Subdomain skip (CDN prefix "${g}"): ${n} \u2192 NOT corrected`);continue}}console.log(`[Resolver] Domain corrected (direct): ${n} \u2192 ${h.domain}`),c=c.replace(n,h.domain),a=!0;break}}if(!a&&!u)for(let h of ye){let d=h.name;if(d.length<5)continue;let g=0,p=0;for(let m=0;m<d.length;m++){let w=d[m];for(;p<i.length&&i[p]!==w;)p++;if(p<i.length)g++,p++;else break}let y=g/d.length;if(y>=.75&&Math.abs(i.length-d.length)<=4){console.log(`[Resolver] Domain corrected (fuzzy ${Math.round(y*100)}%): ${n} \u2192 ${h.domain}`),c=c.replace(n,h.domain),a=!0;break}}let l=[[/get_viddeo/gi,"get_video"],[/get_videeo/gi,"get_video"],[/getv_video/gi,"get_video"],[/gdet_video/gi,"get_video"],[/gett_video/gi,"get_video"],[/get_vvdo/gi,"get_video"],[/get_vide0/gi,"get_video"]],f=c;for(let[h,d]of l)c=c.replace(h,d);return a?console.log(`[Resolver] Result: ${e.slice(0,80)} \u2192 ${c.slice(0,80)}`):c!==e&&console.log(`[Resolver] Path corrected: ${e.slice(0,60)}`),c}function pn(e,t){try{if(!e)return"";if(typeof e.get=="function")return e.get(t)||e.get(String(t).toLowerCase())||"";let s=String(t).toLowerCase(),n=Object.keys(e);for(let r=0;r<n.length;r++)if(n[r].toLowerCase()===s)return String(e[n[r]]||"")}catch(s){}return""}function yn(e,t){var i;let s=/<iframe\s+[^>]*src=["']([^"']+)["']/gi,n=[],r;for(;(r=s.exec(e))!==null;){let o=r[1];if(o.startsWith("//")&&(o="https:"+o),o.startsWith("/")){let l=(i=t.match(/^https?:\/\/[^\/]+/))==null?void 0:i[0];l&&(o=l+o)}if(!o.startsWith("http")||o===t)continue;let u=o.toLowerCase();if(mn.some(l=>u.includes(l)))continue;let a=0;for(let[l,f]of Object.entries(gn))u.includes(l)&&(a+=f);n.push({url:o,score:a})}return n.length===0?null:(n.sort((o,u)=>u.score-o.score),n[0].url)}function Ae(e,t=0){return b(this,null,function*(){if(t>1)return F(C({},e),{isDirect:!1});t===0&&we.clear(),e.url=ce(e.url);let s=e.url,n=s.toLowerCase();if(!s||s.includes("google-analytics")||s.includes("doubleclick"))return null;if(xt(s))return F(C({},e),{isDirect:!0});try{let r=null;if(n.includes("sibnet.ru")?r=yield Jt(s):n.includes("vidmoly.")||n.includes("voembed.")||n.includes("ansembed.")?r=yield Kt(s):n.includes(".mail.ru")?r=yield Xt(s):n.includes("uqload.")||n.includes("oneupload.")?r=yield Gt(s):n.includes("voe")||n.includes("weneverbeenfree")||n.includes("maryspecialwatch")||n.includes("charlestoughrace")||n.includes("sandratableother")||n.includes("jeremyparticipantanything")||n.includes("teresapoliticallearn")?r=yield Oe(s):n.includes("streamtape.com")||n.includes("stape")?r=yield Qt(s):n.includes("dood")||n.includes("ds2play")||n.includes("bigwar5")?r=yield sn(s):n.includes("moonplayer")||n.includes("filemoon")?r=yield ln(s):n.includes("younetu.")||n.includes("netu.")?r=yield on(s):n.includes("vidoza.")?r=yield an(s):n.includes("xtremestream.")?r=yield cn(s):n.includes("sendvid.")||n.includes("daisukianime")?r=yield en(s):n.includes("myvi.")||n.includes("mytv.")?r=yield rn(s):n.includes("fsvid.")||n.includes("vidzy.")?r=yield Zt(s):n.includes("vidstream.pro")||n.includes("vidcdn.")||n.includes("kakaflix.")||n.includes("vidhsareup.")?r=yield Ne(s):n.includes("luluvid.")||n.includes("lulust.")||n.includes("lulustream.")||n.includes("luluvdo.")||n.includes("livavid.")||n.includes("lulavid.")||n.includes("livastream.")||n.includes("wishonly.")||n.includes("veev.")?r=yield Ne(s):n.includes("lulu.")?r=yield tn(s):n.includes("lecteurvideo.")?r=yield un(s):n.includes("hgcloud.")||n.includes("savefiles.")?r=yield nn(s):n.includes("down-paradise.")||n.includes("ww1.down-paradise.")?r=yield fn(s):n.includes("up4fun.")&&(r=yield dn(s)),r&&r.url!==s&&!V(r.url)){let u=ce(r.url);return u!==r.url&&console.log(`[Resolver] Resolver output corrected: ${r.url.slice(0,60)} \u2192 ${u.slice(0,60)}`),F(C({},e),{url:u,headers:C(C({},e.headers),r.headers||{}),quality:r.quality||e.quality,isDirect:!0,originalUrl:s})}let i=n.includes("up4fun.")||n.includes("down-paradise.")||n.includes("getvid.club")||n.includes("vidhsareup."),o=r&&r.isDead===!0;if(!r||r.url===s){if(i||o)return F(C({},e),{isDirect:!1});let u=r&&r.url===s&&t===0,c=yield x(s,{headers:e.headers});if(c){let a=yield c.text();if(a.includes("p,a,c,k,e,d")&&(a=P(a)),!u){let f=a.match(/window\.location\.(?:href|replace)\s*=\s*['"]([^'"]+)['"]/);if(f&&f[1]!==s){let h=yield x(f[1],{headers:e.headers});h&&(a=yield h.text(),a.includes("p,a,c,k,e,d")&&(a=P(a)))}}if(/<title>\s*watch/i.test(a)&&a.includes("VOE")){let f=yield Oe(s);if(f&&f.url!==s&&f.url.startsWith("http")&&!V(f.url)){let h=ce(f.url);return F(C({},e),{url:h,headers:C(C({},e.headers),f.headers||{}),quality:f.quality||e.quality,isDirect:!0,originalUrl:s})}}let l=yn(a,s);if(l&&!we.has(l)){we.add(l),console.log(`[Resolver] Peeling: Found nested iframe -> ${l}`);let f=yield Ae(F(C({},e),{url:l}),t+1);if(f&&f.isDirect)return f;t>0&&(u=!1)}if(!u){let f=a.match(/file\s*:\s*["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/i)||a.match(/sources\s*:\s*\[["']([^"']+\.(?:m3u8|mp4)[^"']*)["']\]/i)||a.match(/'hls'\s*:\s*'([^']+)'/)||a.match(/"hls"\s*:\s*"([^"]+)"/)||a.match(/"hls2"\s*:\s*"(https?[^"]*?\.m3u8[^"]*)"/)||a.match(/'hls2'\s*:\s*'([^']*?\.m3u8[^']*)'/);if(f){let h=f[1]||f[0];h.startsWith("//")&&(h="https:"+h),h.includes("\\")&&(h=h.split("\\/").join("/").split("\\u002F").join("/"));let d=h.match(/\.(css|js|html|php|jpg|png|gif|svg)(\?.*)?$/i);h.startsWith("http")&&!h.includes(Pe)&&!d&&!V(h)&&(r={url:h})}}if(!r&&!u){let f=a.match(/https?:\/\/[^"']+\.m3u8[^"']*/)||a.match(/https?:\/\/[^"']+\.mp4[^"']*/);if(f){let h=f[0];h.startsWith("//")&&(h="https:"+h),h.includes("\\")&&(h=h.split("\\/").join("/").split("\\u002F").join("/"));let d=h.match(/\.(css|js|html|php|jpg|png|gif|svg)(\?.*)?$/i);h.startsWith("http")&&!h.includes(Pe)&&!d&&!V(h)&&(console.log(`[Resolver] Loose URL match (last resort): ${h.slice(0,80)}`),r={url:h})}}}}if(r&&r.url!==s&&r.url.startsWith("http")&&!V(r.url)){let u=ce(r.url);return u!==r.url&&console.log(`[Resolver] Generic fallback output corrected: ${r.url.slice(0,60)} \u2192 ${u.slice(0,60)}`),F(C({},e),{url:u,headers:C(C({},e.headers),r.headers||{}),quality:r.quality||e.quality,isDirect:!0,originalUrl:s})}}catch(r){}return F(C({},e),{isDirect:!1})})}var He,bt,zn,At,Se,de,Wn,Jn,be,Ue,_t,le,ue,Mt,We,Dt,It,Z,Ie,qt,Vt,Wt,ye,hn,we,mn,gn,Pe,ee=Y(()=>{He=`
-...[truncated]`;bt="720fa2a5",zn=typeof crypto!="undefined"&&typeof crypto.subtle!="undefined"&&typeof TextEncoder!="undefined"&&typeof TextDecoder!="undefined",At=null;try{At=yt("crypto")}catch(e){}Se=typeof setTimeout=="function";de={"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"},Wn=de["User-Agent"],Jn=C({},de),be=e=>{try{return atob(e)}catch(t){return e}};Ue=["AV1","H.265","H.264","VP9"],_t=5e4;le=[2160,1080,720,480,360,240],ue=720;Mt={avc1:"H.264",h264:"H.264",hev1:"H.265",hvc1:"H.265",h265:"H.265",av01:"AV1",av1:"AV1",vp9:"VP9",vp09:"VP9",mp4a:"AAC","ac-3":"AC3","ec-3":"EAC3",opus:"Opus"};We=new Map,Dt=12e4;It=3e5,Z=new Map;Ie={VF:"fr",VFQ:"fr",VFF:"fr",VFI:"fr",VFK:"fr",FRA:"fr",FR:"fr",FRENCH:"fr",FRAN\u00C7AIS:"fr",VOSTFR:"fr",VOSTF:"fr",VOST:"fr",SUBF:"fr",MULTI:"multi",FAN:"multi",EN:"en",ENG:"en",ENGLISH:"en",VOA:"en",VO:"ja",JA:"ja",JP:"ja",JAP:"ja",JAPANESE:"ja",VOSTA:"ja"};qt=6,Vt=3;Wt=15e3;ye=[{name:"streamtape",domain:"streamtape.com"},{name:"sibnet",domain:"sibnet.ru"},{name:"vidmoly",domain:"vidmoly.to"},{name:"uqload",domain:"uqload.co"},{name:"voe",domain:"voe.sx"},{name:"dood",domain:"dood.to"},{name:"younetu",domain:"younetu.org"},{name:"netu",domain:"netu.tv"},{name:"vidoza",domain:"vidoza.net"},{name:"sendvid",domain:"sendvid.com"},{name:"myvi",domain:"myvi.ru"},{name:"moon",domain:"filemoon.sx"},{name:"luluvid",domain:"luluvid.com"},{name:"fsvid",domain:"fsvid.lol"},{name:"vidzy",domain:"vidzy.live"},{name:"lecteurvideo",domain:"lecteurvideo.com"},{name:"vidhsareup",domain:"vidhsareup.fun"},{name:"hgcloud",domain:"hgcloud.xyz"},{name:"up4fun",domain:"up4fun.top"},{name:"lulu",domain:"luluvdo.com"}],hn=["voembed.net","vidmoly.biz","vidmoly.net","gn1r5n.org","streamhide.to"];we=new Set,mn=["googleads","doubleclick","googlesyndication","googletagmanager","facebook.com/plugins","twitter.com/share","disqus.com","hotjar.com","analytics","tracking","pixel","gtag","adservice","adserver","ad.doubleclick","amazon-adsystem","criteo","taboola","outbrain"],gn={sibnet:3,vidmoly:3,uqload:3,voe:3,dood:3,streamtape:3,sendvid:2,younetu:2,netu:2,moonplayer:2,filemoon:2,vidoza:2,myvi:2,luluvid:2,lulu:2,embed:2,player:2,video:2,cdn:1,hls:3,mp4:3,m3u8:3};Pe="googletagmanager"});function vn(e){return e?e.includes("Just a moment")||e.includes("cf-browser-verification")||e.includes("Attention Required")||e.includes("error code: 1010"):!1}function X(s){return b(this,arguments,function*(e,t={}){let{timeout:n=12e3,signal:r}=t,i=C(C({},wn),t.headers||{});for(let o=0;o<=W.length;o++){if(H(r))return null;try{let u=yield x(e,{headers:i,timeout:n,signal:r,redirect:"follow"});if(!u)return null;let c=typeof u.status=="number"?u.status:0;if(c===404||c===422)return null;if(c===429&&o<W.length){yield K(W[o]*2);continue}let a=yield u.text();if(vn(a)&&o<W.length){yield K(W[o]);continue}if(c<200||c>=300||!a||a.length===0)return null;try{let l=JSON.parse(a);return l==null?null:l}catch(l){return null}}catch(u){if(H(r))return null;if(o<W.length)yield K(W[o]);else return null}}return null})}function Te(e){let t={Referer:`${$e}/`,"User-Agent":Je};return e&&(t.Authorization=e),t}var $e,Je,wn,W,Ke=Y(()=>{ee();$e="https://aniverse.fr",Je="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",wn={"User-Agent":Je,Accept:"application/json, text/plain, */*","Accept-Language":"fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7",Referer:`${$e}/`,Origin:$e},W=[800,2e3]});function te(e,t=2,s=0){return b(this,null,function*(){for(let n=0;n<t;n++){if(s&&Date.now()>=s)return null;let r=s?s-Date.now():0,i=Math.min(8e3,Math.max(2e3,r)),o=yield x(e,{timeout:i});if(o&&o.ok)return o;n<t-1&&(yield K(400))}return null})}function Xe(e){let t=G.get(e);return t&&Date.now()-t.ts<Tn?t.data:(t&&G.delete(e),null)}function Ce(e,t){if(G.size>=Cn){let s=[...G.entries()].sort((n,r)=>n[1].ts-r[1].ts).slice(0,100).map(([n])=>n);for(let n of s)G.delete(n)}G.set(e,{data:t,ts:Date.now()})}function re(e){return/^[\x00-\x7F\u00C0-\u024F\s\-,:!.'?&()0-9]+$/.test(e)}function _n(e){return String(e).match(/^kitsu:(\d+)(?::(\d+))?$/)}function En(e){let t=String(e||"").match(/^(mal|anilist|anidb|tvdb):(\d+)(?::(\d+))?$/i);return t?{tracker:t[1].toLowerCase(),externalId:t[2],absEpisode:t[3]?parseInt(t[3],10):null}:null}function xn(e){return b(this,null,function*(){var r;if(!e||e.tracker==="anidb"||e.tracker==="tvdb")return null;let t=e.tracker==="anilist",s=t?"query($id: Int){Media(id: $id, type: ANIME){idMal title{romaji english native}}}":"query($idMal: Int){Media(idMal: $idMal, type: ANIME){idMal title{romaji english native}}}",n=t?{id:Number(e.externalId)}:{idMal:Number(e.externalId)};if(!Number.isFinite((r=n.id)!=null?r:n.idMal))return null;try{let i=yield x("https://graphql.anilist.co",{method:"POST",headers:{"User-Agent":$n,"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify({query:s,variables:n}),timeout:6e3});if(!i||!i.ok)return null;let o=null;try{o=yield i.json()}catch(u){return null}return o&&o.data&&o.data.Media?o.data.Media:null}catch(i){return null}})}function Mn(e,t,s){return b(this,null,function*(){let n=yield xn(e);if(!n||!n.title)return console.warn(`[Metadata] Tracker ${e.tracker}:${e.externalId} non r\xE9solu (0 requ\xEAte TMDB d\xE9pens\xE9e)`),[];let r=[n.title.english,n.title.romaji,n.title.native].map(i=>(i||"").trim()).filter(Boolean);for(let i of r){let o=yield Ee(i,t);if(!o)continue;let u=yield he(String(o),t,s);if(u&&u.length>0)return console.log(`[Metadata] ${e.tracker}:${e.externalId} \u2192 TMDB ${o} via "${i}"`),u}return console.log(`[Metadata] AniList titles used directly for ${e.tracker}:${e.externalId}`),r})}function Rn(e,t){return b(this,null,function*(){if(!/^tt\d+$/i.test(e))return null;let s=`${se}/find/${e}?api_key=${ne}&external_source=imdb_id`,n=yield te(s,1);if(!n)return null;let r=null;try{r=yield n.json()}catch(u){return null}let o=((t==="movie"?r&&r.movie_results:r&&r.tv_results)||[])[0];return o&&o.id?String(o.id):null})}function Ee(e,t){return b(this,null,function*(){let s=t==="movie"?"movie":"tv",n=encodeURIComponent(e),r=`${se}/search/${s}?api_key=${ne}&query=${n}`,i=yield x(r);if(!i)return null;let o;try{o=yield i.json()}catch(c){return null}let u=o==null?void 0:o.results;return!u||!u.length?null:u[0].id})}function Ge(n,r){return b(this,arguments,function*(e,t,s={}){var m,w,v,S,A,$;let i=`https://kitsu.io/api/edge/anime/${e}`,o=yield x(i);if(!o)return console.log(`[Metadata] Kitsu API error: failed to fetch ${e}`),[];let u;try{u=yield o.json()}catch(T){return console.log(`[Metadata] Kitsu API error: invalid JSON for ${e}`),[]}let c=(m=u==null?void 0:u.data)==null?void 0:m.attributes;if(!c)return console.log(`[Metadata] Kitsu API error: no anime data for ${e}`),[];let a=(v=(w=c.titles)==null?void 0:w.en)==null?void 0:v.trim();if(a){let T=yield Ee(a,t);if(T)return console.log(`[Metadata] Kitsu ${e} -> TMDB ${T} via "${a}"`),yield he(String(T),t,s)}let l=[],f=(S=c.canonicalTitle)==null?void 0:S.trim();a&&l.push(a),f&&!l.some(T=>T.toLowerCase()===f.toLowerCase())&&l.push(f);let h=($=(A=c.titles)==null?void 0:A.ja_jp)==null?void 0:$.trim();h&&!l.some(T=>T.toLowerCase()===h.toLowerCase())&&re(h)&&l.push(h);let d=c.abbreviatedTitles||[];for(let T of d){let U=T==null?void 0:T.trim();U&&!l.some(M=>M.toLowerCase()===U.toLowerCase())&&re(U)&&l.push(U)}let g=s.season?parseInt(s.season,10):null;if(g&&g>0){let T=[a,f].filter(Boolean);for(let U of T)for(let M of _e){let _=`${U} ${M(g)}`;l.some(L=>L.toLowerCase()===_.toLowerCase())||l.push(_)}}let p=c.startDate,y=p&&p.length>=4&&/^\d{4}/.test(p)?parseInt(p.substring(0,4),10):null;return l._metadata={isAnime:(c.originalLanguage||"")==="ja",name:c.canonicalTitle||"",originalLanguage:c.originalLanguage||"",year:y},console.log(`[Metadata] Kitsu fallback titles for ${e}: ${l.join(" | ")}`),l})}function he(n,r){return b(this,arguments,function*(e,t,s={}){var d,g,p,y,m,w;let i=t==="movie"?"movie":"tv",o=s.season?parseInt(s.season,10):null,u=`tmdb:${e}:${i}:${o||""}`,c=Xe(u);if(c)return console.log(`[Metadata] Cache HIT for ${u}`),c;let a=[],l=null;try{let v=`${se}/${i}/${e}?api_key=${ne}&language=en-US`,S=`${se}/${i}/${e}/alternative_titles?api_key=${ne}`,A=`${se}/${i}/${e}/translations?api_key=${ne}`,$=Date.now()+Sn,T=yield te(v,2,$),U=()=>$-Date.now(),M=s.allowEnrichment!==!1,_=null,L=null;if(M&&U()>An?[_,L]=yield Promise.all([te(S,1,$),te(A,1,$)]):M&&U()>bn&&(L=yield te(A,1,$)),T){let R=yield T.json(),E=R!=null?R:{},D=(d=i==="movie"?E.title:E.name)==null?void 0:d.trim(),I=(g=i==="movie"?E.original_title:E.original_name)==null?void 0:g.trim();if(E){let k=i==="movie"?E.release_date:E.first_air_date,B=k&&k.length>=4&&/^\d{4}/.test(k)?parseInt(k.substring(0,4),10):null;if(l={isAnime:E.original_language==="ja"||(E.genres||[]).some(O=>O.id===16),name:E.name||E.title||"",originalLanguage:E.original_language||"",year:B},i==="tv"&&Array.isArray(E.seasons)){let O={};for(let z of E.seasons)z&&z.season_number>0&&z.episode_count>0&&(O[z.season_number]=z.episode_count);Object.keys(O).length>0&&(l.seasonEpisodeCounts=O)}}if(D&&a.push(D),I&&I!==D&&re(I)&&a.push(I),t==="tv"&&s.season){let k=parseInt(s.season,10);if(k>0&&D)for(let B of _e){let O=`${D} ${B(k)}`;a.includes(O)||a.push(O)}if(k>0&&I&&I!==D&&re(I))for(let B of _e){let O=`${I} ${B(k)}`;a.includes(O)||a.push(O)}}}if(_){let R=yield _.json(),E=R!=null?R:{},D=i==="movie"?E.titles:E.results;D&&Array.isArray(D)&&D.forEach(I=>{var B;let k=(B=I.title)==null?void 0:B.trim();k&&!a.some(O=>O.toLowerCase()===k.toLowerCase())&&re(k)&&a.push(k)})}if(L){let R=yield L.json(),D=((R!=null?R:{}).translations||[]).find(k=>k.iso_639_1==="fr"),I=((y=(p=D==null?void 0:D.data)==null?void 0:p.name)==null?void 0:y.trim())||((w=(m=D==null?void 0:D.data)==null?void 0:m.title)==null?void 0:w.trim());if(I&&!a.some(k=>k.toLowerCase()===I.toLowerCase())&&a.splice(1,0,I),t==="tv"&&s.season&&I){let k=parseInt(s.season,10);if(k>0){let B=`${I} Saison ${k}`;if(!a.some(O=>O.toLowerCase()===B.toLowerCase())){let O=a.indexOf(I);O!==-1?a.splice(O+1,0,B):a.splice(2,0,B)}}}}}catch(v){console.error(`[Metadata] TMDB API error: ${v.message}`)}let f=new Set,h=a.filter(v=>{let S=v.toLowerCase();return f.has(S)?!1:(f.add(S),!0)});return l&&(h._metadata=l),(h.length>0||l)&&Ce(u,h),console.log(`[Metadata] Titles for ${e}: ${h.join(" | ")}`),h})}function Dn(e,t,s){return b(this,null,function*(){var n,r,i,o,u,c;try{if(!e||e.length<3)return[];let a=s.season?parseInt(s.season,10):null,l=`kitsu-fb:${e.toLowerCase()}:${t}:${a||""}`,f=Xe(l);if(f)return console.log(`[Metadata] Kitsu fallback cache HIT for "${e}"`),f;let h=`https://kitsu.io/api/edge/anime?filter[text]=${encodeURIComponent(e)}&page[limit]=5`,d=yield x(h);if(!d)return[];let g=yield d.json();if(!((n=g==null?void 0:g.data)!=null&&n.length))return[];for(let p of g.data){let y=p.attributes||{},m=(i=(r=y.titles)==null?void 0:r.ja_jp)==null?void 0:i.trim(),w=(o=y.canonicalTitle)==null?void 0:o.trim(),v=((c=(u=y.titles)==null?void 0:u.en)==null?void 0:c.trim())||w;if(!m&&y.originalLanguage!=="ja"||!v)continue;console.log(`[Metadata] Kitsu search: "${e}" \u2192 "${v}" (ja=${!!m})`);let S=yield Ee(v,t);if(S){let $=yield he(String(S),t,s),T=$._metadata;if(T&&T.isAnime)return console.log(`[Metadata] Fallback success: TMDB ID ${S} for "${v}"`),Ce(l,$),$}console.log(`[Metadata] Fallback: using Kitsu titles directly for ${p.id}`);let A=yield Ge(p.id,t,s);return Ce(l,A),A}return console.log(`[Metadata] Kitsu search: no valid results for "${e}"`),[]}catch(a){return console.warn(`[Metadata] Kitsu fallback error: ${a.message}`),[]}})}function Ye(n,r){return b(this,arguments,function*(e,t,s={}){let i=(e==null?"":String(e).trim()).replace(/^tmdb[:/]/i,"").replace(/^(?:movie|series)[:/]/i,""),o=_n(i),u=s.season!=null?s.season:null;if(console.log(`[Metadata] getTmdbTitles: id="${i}" type="${t}" season=${s.season}`),o){let f=o[1],h=o[2]?parseInt(o[2],10):null;u=s.season!=null?s.season:h,console.log(`[Metadata] Kitsu ID detected: ${f}, season=${u}`);let d=yield Ge(f,t,F(C({},s),{season:u}));return d.effectiveSeason=u,d}if(!i){console.error(`[Metadata] Invalid/null TMDB ID received: "${e}"`);let f=[];return f.effectiveSeason=u,f}let c=En(i);if(c){s.season==null&&c.absEpisode!=null&&(u=c.absEpisode);let f=yield Mn(c,t,F(C({},s),{season:u}));return f.effectiveSeason=u,f}let a=i;if(!/^\d+$/.test(i)){let f=/^tt\d+$/i.test(i)?i:/^imdb:/i.test(i)?i.slice(5):null,h=f?yield Rn(f,t):null;if(!h){console.warn(`[Metadata] ID non-TMDB non r\xE9solu: "${i}" \u2192 aucun titre (\xE9chec rapide, 0 requ\xEAte TMDB)`);let d=[];return d.effectiveSeason=u,d}console.log(`[Metadata] ID ${i} \u2192 TMDB ${h}`),a=h}let l=yield he(a,t,s);if(t==="tv"&&l.length>0&&l._metadata){let f=l._metadata;if(f.isAnime)console.log(`[Metadata] \u2713 ID ${a}: "${f.name}" confirmed anime (${f.originalLanguage})`);else{console.warn(`[Metadata] \u26A0 ID ${a} = "${f.name}" (${f.originalLanguage}) - not anime!`);let h=/[\u3000-\u9FFF\uF900-\uFAFF]/.test(f.name||"");if(f.originalLanguage==="ja"||h){let g=yield Dn(l[0],t,s);if(g.length>0)return console.log(`[Metadata] Fallback success: ${g.length} alternative titles`),g.effectiveSeason=u,g;console.warn(`[Metadata] Kitsu fallback failed for "${f.name}", using original titles`)}else console.log(`[Metadata] No anime indicators, skipping Kitsu fallback for "${f.name}"`)}}return l.effectiveSeason=u,l})}var ne,se,Sn,bn,An,$n,G,Tn,Cn,_e,Ze=Y(()=>{ee();ne="8265bd1679663a7ea12ac168da84d2e8",se="https://api.themoviedb.org/3",Sn=2e4,bn=4e3,An=8e3,$n="Nuvio-Providers/1.0";G=new Map,Tn=300*1e3,Cn=500;_e=[e=>`Season ${e}`,e=>`Saison ${e}`,e=>`S${e}`]});function kn(e){let t=Date.now(),s=[];for(let[n,r]of j)t-r.ts>=r.ttl&&s.push(n);for(let n of s)j.delete(n);if(j.size>150){let r=[...j.entries()].sort((i,o)=>i[1].ts-o[1].ts).slice(0,j.size-150);for(let[i]of r)j.delete(i)}s.length>0&&console.log(`[${e}] Cache: ${s.length} expir\xE9es supprim\xE9es, ${j.size} entr\xE9es restantes`),Qe=t}function xe(e,t,s={}){let n=t||e.toUpperCase(),r=`${e}_`,i=s.successTtl||3e5,o=s.failureTtl||3e4,u=s.maxSize||150;function c(f){return`${r}${String(f).replace(/[^a-zA-Z0-9]/g,"_").replace(/_+/g,"_").replace(/^_|_$/g,"")}`}function a(f){let h=j.get(f);if(!h)return;if(Date.now()-h.ts>=h.ttl){j.delete(f);return}return h.data}function l(f,h,d=!0){if(Date.now()-Qe>6e4&&kn(n),j.size>=u){let g=Math.ceil(u*.2),p=[...j.entries()].sort((y,m)=>y[1].ts-m[1].ts).slice(0,g);for(let[y]of p)j.delete(y)}j.set(f,{data:h,ts:Date.now(),ttl:d?i:o,success:d})}return function(p,y){return b(this,arguments,function*(h,d,g={}){let m=c(h);if(!g.bypass){let w=a(m);if(w!==void 0)return console.log(`[${n}] Cache HIT: ${h.slice(0,60)}`),w}console.log(`[${n}] Cache MISS: ${h.slice(0,60)}`);try{let w=yield d(),v=w!=null;return l(m,w,v),v||console.log(`[${n}] Cache: negative result cached (30s TTL)`),w}catch(w){throw console.warn(`[${n}] Cache: error, not caching: ${w==null?void 0:w.message}`),w}})}}var j,Qe,et=Y(()=>{j=new Map,Qe=Date.now()});function J(e){return String(e||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[''`’]/g,"'").replace(/[–—]/g," ").replace(/[^a-z0-9]+/g," ").trim()}function In(e,t){let s=[J(e.title),J(e.titleEnglish),J(e.titleRomaji)].filter(Boolean),n=0;for(let r of s){if(!r)continue;if(r===t)return 120;r.startsWith(t+" ")||t.startsWith(r+" ")?n=Math.max(n,95):(r.includes(t)||t.includes(r))&&(n=Math.max(n,75));let i=t.split(/\s+/).filter(c=>c.length>2),o=new Set(r.split(/\s+/)),u=i.filter(c=>o.has(c)).length;i.length>=2&&u>=2&&(n=Math.max(n,Math.round(u/i.length*60)))}return n}function Ln(e){let t=[];for(let s of(e||[]).filter(Boolean)){let n=J(s);if(n&&!t.includes(n)&&t.push(n),t.length>=3)break}return t.join("|||")}function Fn(e,t){return b(this,null,function*(){let s=[];for(let c of(e||[]).filter(Boolean)){let a=J(c);if(a&&!s.includes(a)&&s.push(a),s.length>=3)break}let n=Ln(e),r=()=>b(null,null,function*(){let c=new Map;for(let a of s){if(H(t))break;let l=yield X(`${Me}/anime/search?q=${encodeURIComponent(a)}`,{signal:t}),f=l&&Array.isArray(l.data)?l.data:Array.isArray(l)?l:null;if(!f)continue;for(let d of f){if(!d||!d.id)continue;let g=In(d,a),p=c.get(d.id);(!p||g>p.score)&&c.set(d.id,{item:d,score:g})}let h=[...c.values()].sort((d,g)=>g.score-d.score)[0];if(h&&h.score>=120)break}return[...c.values()].sort((a,l)=>l.score-a.score)});if(nt){let c=yield nt(`search_${n}`,()=>b(null,null,function*(){let a=yield r();return a&&a.length>0?a:null}),{bypass:!1});return c&&Array.isArray(c)?c:r()}let i=`raw_${n}`,o=st.get(i);if(o&&Date.now()-o.ts<lt)return o.list;let u=yield r();return u&&u.length>0&&st.set(i,{list:u,ts:Date.now()}),u})}function ut(e,t,s,n){return b(this,null,function*(){let r=Math.max(1,parseInt(t,10)||1),i=Math.max(1,parseInt(s,10)||1),o=`${e}:${r}:${i}`,u=rt.get(o);if(u&&Date.now()-u.ts<lt)return u.list;let c=yield X(`${Me}/anime/episode/episodes?animeId=${encodeURIComponent(e)}&episodeNumber=${r}&limit=${i}`,{signal:n}),a=Array.isArray(c)&&c.length>0?c:null;return a&&rt.set(o,{list:a,ts:Date.now()}),a})}function Bn(e,t,s){let n=parseInt(e.totalEpisodes,10)||0;if(t&&t.length>0){let r=t.find(i=>parseInt(i.episodeNumber,10)===s);return r?{ok:!0,episodeTitle:r.titleFr||r.episodeTitle||null}:{ok:!1}}return n>0&&s>n+2?{ok:!1}:{ok:!0,episodeTitle:null}}function On(e,t,s){return b(this,null,function*(){let n=`${Un}/tv/${e}/season/${t}`,r=null,i=yield X(`${n}?api_key=${tt}&language=fr-FR`,{signal:s,timeout:1e4});if(i&&Array.isArray(i.episodes)&&i.episodes.length>0&&(r=i.episodes),!r){let o=yield X(`${n}?api_key=${tt}&language=en-US`,{signal:s,timeout:1e4});o&&Array.isArray(o.episodes)&&o.episodes.length>0&&(r=o.episodes)}return r?r.map(o=>({number:parseInt(o.episode_number,10),name:String(o.name||"").trim()})).filter(o=>o.number>0&&o.name):null})}function Nn(e,t){if(e===t)return 1;let s=e.length,n=t.length;if(!s||!n)return 0;let r=new Array(n+1),i=new Array(n+1);for(let o=0;o<=n;o++)r[o]=o;for(let o=1;o<=s;o++){i[0]=o;for(let c=1;c<=n;c++){let a=e[o-1]===t[c-1]?0:1;i[c]=Math.min(r[c]+1,i[c-1]+1,r[c-1]+a)}let u=r;r=i,i=u}return 1-r[n]/Math.max(s,n)}function it(e){let t=e.match(/parti[ei]?\s*(\d+)/)||e.match(/\bpart\s*(\d+)/);return t?parseInt(t[1],10):null}function ot(e){return e.replace(/parti[ei]?\s*\d+|\bpart\s*\d+/g," ").replace(/\s+/g," ").trim()}function Pn(e,t){let s=J(e);if(!s||!t)return 0;let n=it(s),r=ot(s);if(!r)return 0;let i=0,o=String(t).split(/\s*\/\s*/);for(let u of o){let c=J(u);if(!c)continue;let a=it(c);if(n!=null&&a!=null&&n!==a)continue;let l=ot(c);if(!l)continue;if(l===r||c===s){i=Math.max(i,120);continue}if(l.includes(r)||r.includes(l)){i=Math.max(i,95);continue}let f=new Set(r.split(" ").filter(y=>y.length>2)),h=new Set(l.split(" ").filter(y=>y.length>2));if(f.size&&h.size){let y=[...f].filter(v=>h.has(v)).length,m=new Set([...f,...h]).size,w=m?y/m:0;if(w>=.8){i=Math.max(i,90);continue}if(w>=.6){i=Math.max(i,80);continue}}let d=0,g=Math.min(r.length,l.length);for(;d<g&&r[d]===l[d];)d++;if(d>=12){i=Math.max(i,88);continue}if(Nn(r,l)>=.55){i=Math.max(i,85);continue}}return i}function Hn(e,t){let s=String(e.type||"");return t?/special|ova|ona/i.test(s)?1:0:/tv/i.test(s)?1:0}function jn(u,c,a,l,f,h){return b(this,arguments,function*(e,t,s,n,r,i,o={}){let d=o.windowCenter!=null?o.windowCenter:null,g=o.windowSpan||0,p=null,y=e.filter(m=>!/movie/i.test(String(m.item.type||""))).slice(0,8);for(let m of y){if(Q(i,pe)||H(r))break;let w=d!=null?Math.max(1,d-g):1,v=d!=null?g*2+2:150,S=null;try{S=yield ut(m.item.id,w,v,r)}catch(A){if(H(r))throw A;continue}if(S)for(let A of S){let $=parseInt(A.episodeNumber,10);if(d!=null&&Math.abs($-d)>g)continue;let T=A.titleFr||A.episodeTitle||"";if(!T)continue;let U=Pn(t,T);if(U<n)continue;let M=Hn(m.item,s);(!p||U>p.score||U===p.score&&M>p.typeAff)&&(p={item:m.item,epNumber:parseInt(A.episodeNumber,10),epTitle:T,score:U,typeAff:M})}}return p})}function at(e,t,s,n){return b(this,null,function*(){let r=yield X(`${Me}/anime/stream/${encodeURIComponent(e)}/${t}/${s}`,{signal:n,timeout:15e3});if(!r||typeof r.source!="string"||!r.source||!r.source.includes("/"))return null;let i=r.headers&&typeof r.headers.Authorization=="string"?r.headers.Authorization:null;return i?{source:r.source,authHeader:i,tracks:Array.isArray(r.tracks)?r.tracks:[]}:(console.log(`[${N}] Stream sans Authorization (CDN 401 garanti) \u2014 rejet\xE9`),null)})}function ct(i,o,u){return b(this,arguments,function*(e,t,{epLabel:s,episodeTitle:n,signal:r}){let[c,a]=yield Promise.allSettled([at(e.id,t,"sub",r),at(e.id,t,"dub",r)]),l=c.status==="fulfilled"?c.value:null,f=a.status==="fulfilled"?a.value:null;if(!l&&!f)return console.log(`[${N}] Ni VOSTFR ni VF dispo sur "${e.slug}" ep ${t}`),[];let h=(g,p,y)=>({name:`${N} (${p})`,title:[`${N} [${p}]`,s,e.title,n?`\u2014 ${n}`:null].filter(Boolean).join(" "),url:g.source,quality:"HLS",language:y,headers:Te(g.authHeader),type:"hls"}),d=[];if(l){let g=l.tracks.find(y=>y&&y.file&&/captions|subtitles/i.test(y.kind||"")),p=h(l,"VOSTFR","ja");g&&g.file&&(p.subtitles=[{url:g.file,language:"fr",name:"Fran\xE7ais",headers:Te(l.authHeader)}]),d.push(p),console.log(`[${N}] VOSTFR OK: ${l.source.slice(0,70)}...`)}return f&&(d.push(h(f,"VF","fr")),console.log(`[${N}] VF OK: ${f.source.slice(0,70)}...`)),d})}function ft(i,o,u,c){return b(this,arguments,function*(e,t,s,n,r={}){let a=(r==null?void 0:r.signal)||null;if(H(a))return[];let l=Date.now(),f=t==="movie",h=parseInt(s,10),d=isNaN(h)||h<0?1:h,g=parseInt(n,10)||1,p=!f&&d===0,y=f?"":`S${d}E${g}`,m=yield Ye(e,f?"movie":"tv",{season:s});if(!m||m.length===0)return console.log(`[${N}] No TMDB titles for ${e}`),[];console.log(`[${N}] Titles: ${m.slice(0,3).join(" | ")}`);let w=yield Fn(m,a);if(w.length===0)return console.log(`[${N}] No search results`),[];if(Q(l,pe))return[];let v=[],S=null;if(!p)for(let{item:_,score:L}of w.slice(0,3)){if(Q(l,pe)||H(a)||L<60)break;let R=String(_.type||""),E=/movie/i.test(R);if(f!==E&&L<120)continue;let D=null;try{D=yield ut(_.id,g,1,a)}catch(B){if(H(a))throw B}let I=Bn(_,D,g);if(!I.ok){console.log(`[${N}] Ep ${g} hors num\xE9rotation de "${_.slug}" (total=${_.totalEpisodes}) \u2014 candidat suivant`);continue}let k=yield ct(_,g,{epLabel:y,episodeTitle:I.episodeTitle,signal:a});if(k.length>0){v=k,S={item:_,epNumber:g,epTitle:I.episodeTitle};break}}if(!f&&(p||v.length===0||d>=2)&&!Q(l,pe)&&!H(a)){let M=yield On(e,d,a);if(M&&M.length>0){let _=M.find(L=>L.number===g);if(!_&&g>=1&&g<=M.length&&(_=M[g-1]),_&&_.name){let L=null,R=0,E=!1,D=_.number,I=null;if(!p&&S&&m._metadata&&m._metadata.seasonEpisodeCounts){let O=m._metadata.seasonEpisodeCounts,z=parseInt(O[d],10)||0,me=parseInt(S.item.totalEpisodes,10)||0;if(z>0&&me>z*1.5&&me>=50){let ie=g;for(let ge=1;ge<d;ge++)ie+=parseInt(O[ge],10)||0;I=ie,L=D!=null&&Math.abs(D-ie)<=30?D:ie,R=30,E=L!==S.epNumber,E&&console.log(`[${N}] Num\xE9rotation absolue d\xE9tect\xE9e ("${S.item.slug}", total=${me}) : S${d}E${g} \u2192 absolu attendu ${L}, num\xE9rique=${S.epNumber} \u2014 correction`)}}let k=v.length>0&&!E?95:85,B=yield jn(w,_.name,p,k,a,l,L!=null?{windowCenter:L,windowSpan:R}:{});if(B){let O=!S||B.item.id!==S.item.id||B.epNumber!==S.epNumber;if(v.length===0||O){let z=yield ct(B.item,B.epNumber,{epLabel:y,episodeTitle:B.epTitle,signal:a});z.length>0?(console.log(`[${N}] Mapping titre: TMDB S${d}E${g} "${_.name}" \u2192 "${B.item.slug}" E${B.epNumber} (score ${B.score})`),v=z):E&&(v=[])}}else E&&(console.log(`[${N}] \xC9pisode num\xE9rique suspect sans correction fiable \u2014 abandon (0 stream)`),v=[])}}}if(v.length===0)return[];let $=[],T=0;for(let M of v){try{let _=yield Ae(M,T);if(_&&_.url){let U=_,{isDirect:L,originalUrl:R}=U,E=ae(U,["isDirect","originalUrl"]);$.push(F(C(C({},M),E),{provider:N}))}}catch(_){if(H(a))throw _;console.log(`[${N}] resolveStream failed: ${_&&_.message} \u2014 serving raw URL`),$.push(F(C({},M),{provider:N}))}T++}return $})}var N,pe,Me,tt,Un,nt,st,rt,lt,dt=Y(()=>{Ke();ee();Ze();et();N="Aniverse",pe=4e4,Me="https://aniverse.fr/api",tt="8265bd1679663a7ea12ac168da84d2e8",Un="https://api.themoviedb.org/3";nt=typeof xe=="function"?xe("anv","Aniverse",{successTtl:600*1e3,maxSize:80}):null,st=new Map;rt=new Map,lt=600*1e3});var qn=wt((ds,ht)=>{dt();ee();ht.exports={getStreams:je("Aniverse",ft)}});return qn();})();
+var __provider = (() => {
+  var __defProp = Object.defineProperty;
+  var __defProps = Object.defineProperties;
+  var __getOwnPropDescs = Object.getOwnPropertyDescriptors;
+  var __getOwnPropNames = Object.getOwnPropertyNames;
+  var __getOwnPropSymbols = Object.getOwnPropertySymbols;
+  var __hasOwnProp = Object.prototype.hasOwnProperty;
+  var __propIsEnum = Object.prototype.propertyIsEnumerable;
+  var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+  var __spreadValues = (a, b) => {
+    for (var prop in b || (b = {}))
+      if (__hasOwnProp.call(b, prop))
+        __defNormalProp(a, prop, b[prop]);
+    if (__getOwnPropSymbols)
+      for (var prop of __getOwnPropSymbols(b)) {
+        if (__propIsEnum.call(b, prop))
+          __defNormalProp(a, prop, b[prop]);
+      }
+    return a;
+  };
+  var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
+  var __require = /* @__PURE__ */ ((x) => typeof require !== "undefined" ? require : typeof Proxy !== "undefined" ? new Proxy(x, {
+    get: (a, b) => (typeof require !== "undefined" ? require : a)[b]
+  }) : x)(function(x) {
+    if (typeof require !== "undefined") return require.apply(this, arguments);
+    throw Error('Dynamic require of "' + x + '" is not supported');
+  });
+  var __objRest = (source, exclude) => {
+    var target = {};
+    for (var prop in source)
+      if (__hasOwnProp.call(source, prop) && exclude.indexOf(prop) < 0)
+        target[prop] = source[prop];
+    if (source != null && __getOwnPropSymbols)
+      for (var prop of __getOwnPropSymbols(source)) {
+        if (exclude.indexOf(prop) < 0 && __propIsEnum.call(source, prop))
+          target[prop] = source[prop];
+      }
+    return target;
+  };
+  var __esm = (fn, res) => function __init() {
+    return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+  };
+  var __commonJS = (cb, mod) => function __require2() {
+    return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+  };
+  var __async = (__this, __arguments, generator) => {
+    return new Promise((resolve, reject) => {
+      var fulfilled = (value) => {
+        try {
+          step(generator.next(value));
+        } catch (e) {
+          reject(e);
+        }
+      };
+      var rejected = (value) => {
+        try {
+          step(generator.throw(value));
+        } catch (e) {
+          reject(e);
+        }
+      };
+      var step = (x) => x.done ? resolve(x.value) : Promise.resolve(x.value).then(fulfilled, rejected);
+      step((generator = generator.apply(__this, __arguments)).next());
+    });
+  };
+
+  // src/utils/seekstream_resolver.js
+  function md5Hash(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash;
+    }
+    return "h_" + Math.abs(hash).toString(36);
+  }
+  function safelyDecodeSeekStreamingUrl(value) {
+    let decoded = String(value || "").trim();
+    for (let index = 0; index < 2; index += 1) {
+      try {
+        const next = decodeURIComponent(decoded);
+        if (next === decoded) break;
+        decoded = next;
+      } catch (e) {
+        return null;
+      }
+    }
+    return decoded;
+  }
+  function parseSeekStreamingEmbedUrl(input) {
+    const decoded = safelyDecodeSeekStreamingUrl(input);
+    if (!decoded || /[\u0000-\u001f\u007f]/.test(decoded)) {
+      return null;
+    }
+    try {
+      const url = new URL(decoded);
+      if (!["http:", "https:"].includes(url.protocol) || url.username || url.password || url.pathname !== "/" || url.search !== "?") return null;
+      const videoId = url.hash.slice(1);
+      if (!/^[A-Za-z0-9_-]{1,128}$/.test(videoId)) {
+        return null;
+      }
+      ;
+      const origin = url.origin;
+      return {
+        embedUrl: `${origin} / #${videoId}`,
+        hostname: url.hostname.toLowerCase(),
+        videoId,
+        origin,
+        referer: `${origin} / `,
+        cacheKey: `${url.hostname.toLowerCase()}: ${videoId}`
+      };
+    } catch (e) {
+      console.log(`Error in parsing: ${e.message}`);
+      return null;
+    }
+  }
+  function selectSeekStreamingPlaybackSource(data) {
+    if (!data || typeof data !== "object") return null;
+    for (const kind of ["source", "master", "masterUrl"]) {
+      const rawUrl = data[kind];
+      if (typeof rawUrl !== "string") continue;
+      try {
+        const url = new URL(rawUrl);
+        if (!["http:", "https:"].includes(url.protocol) || url.username || url.password) continue;
+        return { kind, url: url.href };
+      } catch (e) {
+        continue;
+      }
+    }
+    return null;
+  }
+  function selectSeekStreamingPlaybackSources(data) {
+    if (!data || typeof data !== "object") return [];
+    const candidates = [];
+    const seen = /* @__PURE__ */ new Set();
+    const add = (kind, rawUrl) => {
+      if (typeof rawUrl !== "string") return;
+      try {
+        const url = new URL(rawUrl);
+        if (!["http:", "https:"].includes(url.protocol) || url.username || url.password) return;
+        if (seen.has(url.href)) return;
+        seen.add(url.href);
+        candidates.push({ kind, url: url.href });
+      } catch (e) {
+      }
+    };
+    add("cfNative", data.cfNative);
+    const source = selectSeekStreamingPlaybackSource(data);
+    if (source) add("source", source.url);
+    return candidates;
+  }
+  function getSeekStreamingRequestHeaders(embedUrl) {
+    const parsed = typeof embedUrl === "object" && (embedUrl == null ? void 0 : embedUrl.origin) ? embedUrl : parseSeekStreamingEmbedUrl(embedUrl);
+    if (!parsed) return null;
+    return { Origin: parsed.origin, Referer: parsed.referer };
+  }
+  function hexToBytes(hex) {
+    const bytes = new Uint8Array(hex.length / 2);
+    for (let i = 0; i < hex.length; i += 2) {
+      bytes[i / 2] = parseInt(hex.substr(i, 2), 16);
+    }
+    return bytes;
+  }
+  function decryptAesCbc(hexData, keyStr, ivStr) {
+    return __async(this, null, function* () {
+      try {
+        const cleanHex = hexData.trim().replace(/"/g, "");
+        const data = hexToBytes(cleanHex);
+        const keyBytes = new TextEncoder().encode(keyStr);
+        const ivBytes = new TextEncoder().encode(ivStr);
+        const cryptoKey = yield crypto.subtle.importKey(
+          "raw",
+          keyBytes,
+          { name: "AES-CBC" },
+          false,
+          ["decrypt"]
+        );
+        const decrypted = yield crypto.subtle.decrypt(
+          { name: "AES-CBC", iv: ivBytes },
+          cryptoKey,
+          data
+        );
+        return new TextDecoder().decode(decrypted);
+      } catch (e) {
+        console.error("[EXT-SEEKSTREAMING] AES decryption error:", e);
+        return null;
+      }
+    });
+  }
+  function extractSeekStreaming(seekUrl) {
+    return __async(this, null, function* () {
+      console.log(`ENTERING SEEK with ${seekUrl}`);
+      const parsed = parseSeekStreamingEmbedUrl(seekUrl);
+      if (!parsed) {
+        console.log("Here1");
+        return { seekUrl };
+      }
+      const cacheKey = md5Hash(parsed.cacheKey);
+      const cached = caches.seekstreaming.get(cacheKey);
+      if (cached) return __spreadProps(__spreadValues({}, cached), { fromCache: true });
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 1e4);
+      try {
+        const headers = __spreadValues({
+          "User-Agent": SEEKSTREAMING_USER_AGENT,
+          "Accept": "*/*",
+          "Accept-Language": "en-US,en;q=0.5"
+        }, getSeekStreamingRequestHeaders(parsed));
+        const query = new URLSearchParams({
+          id: parsed.videoId,
+          w: "1920",
+          h: "1080",
+          r: ""
+        }).toString();
+        const apiUrl = `${parsed.origin}/api/v1/video?${query}`;
+        const response = yield fetch(apiUrl, { headers, signal: controller.signal });
+        console.log(`GOT ${JSON.stringify(response)}`);
+        if (!response.ok) {
+          return { seekUrl };
+        }
+        const decryptedRaw = yield decryptAesCbc(
+          yield response.text(),
+          SEEKSTREAMING_AES_KEY_RAW,
+          SEEKSTREAMING_AES_IV_RAW
+        );
+        const selected = selectSeekStreamingPlaybackSources(JSON.parse(decryptedRaw));
+        if (selected.length === 0) {
+          return { seekUrl };
+        }
+        const result = { url: selected[0].url, Referer: parsed.referer };
+        caches.seekstreaming.set(cacheKey, result);
+        return result;
+      } catch (error) {
+        console.err(`extractSeekStreaming Error : ${error.message}`);
+        return { seekUrl };
+      } finally {
+        clearTimeout(timer);
+      }
+    });
+  }
+  var TTLCache, caches, SEEKSTREAMING_USER_AGENT, SEEKSTREAMING_AES_KEY_RAW, SEEKSTREAMING_AES_IV_RAW;
+  var init_seekstream_resolver = __esm({
+    "src/utils/seekstream_resolver.js"() {
+      TTLCache = class {
+        constructor(maxSize = 500, ttlMs = 72e5) {
+          this._cache = /* @__PURE__ */ new Map();
+          this._maxSize = maxSize;
+          this._ttlMs = ttlMs;
+        }
+        get(key) {
+          const entry = this._cache.get(key);
+          if (!entry) return null;
+          if (Date.now() - entry.ts > this._ttlMs) {
+            this._cache.delete(key);
+            return null;
+          }
+          return entry.value;
+        }
+        set(key, value) {
+          if (this._cache.size >= this._maxSize) {
+            const firstKey = this._cache.keys().next().value;
+            this._cache.delete(firstKey);
+          }
+          this._cache.set(key, { value, ts: Date.now() });
+        }
+      };
+      caches = {
+        // voe: new TTLCache(500, 7200000),
+        // fsvid: new TTLCache(500, 60000),
+        // vidzy: new TTLCache(500, 7200000),
+        // vidmoly: new TTLCache(500, 7200000),
+        // sibnet: new TTLCache(500, 7200000),
+        // uqload: new TTLCache(500, 7200000),
+        // doodstream: new TTLCache(500, 3600000),
+        // lulustream: new TTLCache(500, 3600000),
+        // veev: new TTLCache(500, 3600000),
+        // // Vidara's token is IP-bound and short-lived: cache briefly or we hand back
+        // // a URL that is already dead.
+        // vidara: new TTLCache(500, 900000),
+        seekstreaming: new TTLCache(500, 3e5)
+      };
+      SEEKSTREAMING_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36";
+      SEEKSTREAMING_AES_KEY_RAW = "kiemtienmua911ca";
+      SEEKSTREAMING_AES_IV_RAW = "1234567890oiuytr";
+    }
+  });
+
+  // src/utils/resolvers.js
+  function isTruncatedBody(text) {
+    return typeof text === "string" && text.endsWith(RUNTIME_TRUNCATION_SUFFIX);
+  }
+  function responseLooksHtml(response, bodyText) {
+    let ctype = "";
+    try {
+      ctype = response && response.headers && typeof response.headers.get === "function" ? response.headers.get("content-type") || "" : "";
+    } catch (e) {
+      ctype = "";
+    }
+    if (/html/i.test(ctype)) return true;
+    const sniffable = !ctype || /text\/plain/i.test(ctype);
+    if (!sniffable) return false;
+    return /^\s*<(!doctype|html|\?xml|head|body)/i.test(bodyText || "");
+  }
+  function sleep(ms) {
+    const delay = Number(ms) > 0 ? Number(ms) : 0;
+    if (HAS_NATIVE_TIMERS) {
+      return new Promise((resolve) => {
+        setTimeout(resolve, delay);
+      });
+    }
+    const target = Date.now() + delay;
+    return new Promise((resolve) => {
+      const check = () => Date.now() >= target ? resolve() : Promise.resolve().then(check);
+      check();
+    });
+  }
+  function createProvider(name, extractFn, opts = {}) {
+    const PROVIDER_TIMEOUT = safeConfig(`NUVIO_TIMEOUT_${name.toUpperCase().replace(/[^a-z0-9]/g, "_")}`, opts.timeout || PROVIDER_BUDGET_MS);
+    const qualityOpts = opts.quality || { includeCodec: true, includeFps: false };
+    const maxStreams = opts.maxStreams || MAX_STREAMS_PER_PROVIDER;
+    return function getStreams(_0, _1, _2, _3) {
+      return __async(this, arguments, function* (tmdbId, mediaType, season, episode, options = {}) {
+        const se = mediaType === "movie" ? "" : ` S${season}E${episode}`;
+        const label = `${name} ${mediaType} ${tmdbId}${se}`;
+        const externalSignal = options && options.signal ? options.signal : null;
+        const { signal } = setupAbortSignal(externalSignal);
+        if (isAborted(signal)) return [];
+        const startTime = Date.now();
+        console.log(`[${name}] Request: ${label} (build ${BUILD_HASH})`);
+        try {
+          const rawStreams = yield withTimeout(
+            extractFn(tmdbId, mediaType, season, episode, { signal }),
+            PROVIDER_TIMEOUT,
+            label
+          );
+          const rawList = Array.isArray(rawStreams) ? rawStreams : [];
+          const budgetDeadline = startTime + Math.max(5e3, PROVIDER_TIMEOUT - 5e3);
+          const seenUrls = /* @__PURE__ */ new Set();
+          const dedupedRaw = [];
+          for (const s of rawList) {
+            if (!s) continue;
+            const u = s.url;
+            if (typeof u === "string") {
+              if (!u || u.includes("[object")) continue;
+              const dedupKey = `${u}|${String(s.language || "").toUpperCase()}`;
+              if (seenUrls.has(dedupKey)) continue;
+              seenUrls.add(dedupKey);
+            }
+            dedupedRaw.push(s);
+          }
+          const truncated = dedupedRaw.slice(0, maxStreams * 2);
+          const expanded = yield expandStreamQualities(truncated, __spreadProps(__spreadValues({}, qualityOpts), { budgetDeadline }));
+          const elapsed = Date.now() - startTime;
+          console.log(`[${name}] Done: ${expanded.length} streams in ${elapsed}ms`);
+          return expanded.slice(0, maxStreams);
+        } catch (error) {
+          if (error && error.message && error.message.includes("[Timeout]")) {
+            console.warn(`[${name}] ${error.message}`);
+          } else if (error && error.name === "AbortError") {
+            console.warn(`[${name}] Request aborted: ${label}`);
+          } else {
+            console.error(`[${name}] Error:`, error && error.message || error);
+          }
+          return [];
+        }
+      });
+    };
+  }
+  function setupAbortSignal(externalSignal) {
+    const controller = createAbortController();
+    const signal = controller ? controller.signal : externalSignal;
+    if (controller && externalSignal && !externalSignal.aborted) {
+      try {
+        if (typeof externalSignal.addEventListener === "function") {
+          externalSignal.addEventListener("abort", function() {
+            try {
+              controller.abort();
+            } catch (e) {
+            }
+          });
+        }
+      } catch (e) {
+      }
+    }
+    return { signal, controller };
+  }
+  function formatSizeBytes(bytes) {
+    if (!bytes || bytes <= 0) return null;
+    const gb = bytes / (1024 * 1024 * 1024);
+    if (gb >= 1) return `${Math.round(gb * 10) / 10} GB`;
+    const mb = bytes / (1024 * 1024);
+    if (mb >= 1) return `${Math.round(mb * 10) / 10} MB`;
+    const kb = bytes / 1024;
+    return `${Math.round(kb)} KB`;
+  }
+  function fetchVideoSize(_0) {
+    return __async(this, arguments, function* (url, headers = {}) {
+      if (!url) return null;
+      if (!HAS_NATIVE_TIMERS) return null;
+      try {
+        const res = yield safeFetch(url, { method: "HEAD", headers, timeout: 5e3 });
+        if (!res || !res.ok) return null;
+        const cl = getResponseHeader(res.headers, "content-length");
+        if (!cl) return null;
+        const bytes = Number(cl);
+        if (!Number.isFinite(bytes) || bytes <= 0) return null;
+        return formatSizeBytes(bytes);
+      } catch (e) {
+        return null;
+      }
+    });
+  }
+  function isBudgetExhausted(startTime, budgetMs) {
+    const elapsed = Date.now() - (startTime || 0);
+    return elapsed > (budgetMs || TV_BUDGET_MS);
+  }
+  function createAbortController() {
+    try {
+      if (typeof AbortController !== "undefined") {
+        return new AbortController();
+      }
+    } catch (_) {
+    }
+    return null;
+  }
+  function isAborted(signal) {
+    return signal && (typeof signal.aborted === "boolean" ? signal.aborted : false);
+  }
+  function safeConfig(key, defaultVal) {
+    try {
+      if (typeof process !== "undefined" && process.env && process.env[key]) {
+        const val = parseInt(process.env[key], 10);
+        return isNaN(val) ? defaultVal : val;
+      }
+    } catch (_) {
+    }
+    return defaultVal;
+  }
+  function withTimeout(promise, ms, label = "Operation") {
+    return __async(this, null, function* () {
+      if (!ms || ms <= 0 || !HAS_NATIVE_TIMERS) return promise;
+      let timer;
+      const timeout = new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error(`[Timeout] ${label} exceeded ${ms}ms`)), ms);
+      });
+      try {
+        return yield Promise.race([promise, timeout]);
+      } finally {
+        clearTimeout(timer);
+      }
+    });
+  }
+  function isKnownFakeDirectUrl(url) {
+    if (!url || typeof url !== "string") return true;
+    const u = url.toLowerCase();
+    return u.includes("test-videos.co.uk") || u.includes("big_buck_bunny") || u.includes("bigbuckbunny") || u.includes("sample-videos.com") || u.includes("example.com") || u.includes("localhost") || // Leurre anti-scraper fsvid/vidzy : "troll/master.m3u8" est identique
+    // pour tous les embeds (vidéo de test). Empêche le fallback générique
+    // de le renvoyer comme URL directe si resolveFsvidVidzy échoue.
+    u.includes("/troll/master.m3u8");
+  }
+  function isPlayableMediaUrl(url) {
+    if (!url || typeof url !== "string") return false;
+    const u = url.toLowerCase();
+    if (isKnownFakeDirectUrl(u)) return false;
+    return /\.(mp4|m3u8|mkv|webm|mpd)(\?.*)?$/.test(u) || u.includes("/hls2/") || u.includes("/master.m3u8");
+  }
+  function nearestQualityTier(height) {
+    if (!Number.isFinite(height) || height <= 0) return DEFAULT_QUALITY_TIER;
+    let nearest = STRICT_QUALITY_TIERS[0];
+    let minDiff = Math.abs(height - nearest);
+    for (const tier of STRICT_QUALITY_TIERS) {
+      const diff = Math.abs(height - tier);
+      if (diff < minDiff) {
+        minDiff = diff;
+        nearest = tier;
+      }
+    }
+    return nearest;
+  }
+  function normalizeQualityLabel(value) {
+    const raw = String(value || "").trim().toLowerCase();
+    if (!raw) return `${DEFAULT_QUALITY_TIER}p`;
+    if (raw === "4k" || raw === "uhd" || raw.includes("2160")) return "2160p";
+    if (raw.includes("fhd") || raw.includes("fullhd") || raw.includes("1080")) return "1080p";
+    if (raw.includes("hd") || raw.includes("720")) return "720p";
+    const numericMatch = raw.match(/(\d{3,4})\s*p?/i);
+    if (numericMatch) {
+      const tier = nearestQualityTier(Number(numericMatch[1]));
+      return `${tier}p`;
+    }
+    return `${DEFAULT_QUALITY_TIER}p`;
+  }
+  function parseCodecs(codecsStr) {
+    if (!codecsStr || typeof codecsStr !== "string") return { video: null, audio: null };
+    const parts = codecsStr.split(",").map((s) => s.trim());
+    let video = null, audio = null;
+    for (const codec of parts) {
+      const base = codec.split(".")[0].toLowerCase();
+      const known = CODEC_PRIORITY[base];
+      if (!known) continue;
+      if (["H.264", "H.265", "AV1", "VP9"].includes(known)) {
+        if (!video) video = { codec: known, raw: codec };
+      } else if (["AAC", "AC3", "EAC3", "Opus"].includes(known)) {
+        if (!audio) audio = { codec: known, raw: codec };
+      }
+    }
+    return { video, audio };
+  }
+  function getCachedManifest(key) {
+    const entry = manifestCache.get(key);
+    if (entry && Date.now() - entry.ts < MANIFEST_CACHE_TTL) return entry.data;
+    return null;
+  }
+  function setCachedManifest(key, data) {
+    manifestCache.set(key, { data, ts: Date.now() });
+  }
+  function getCachedFetch(key) {
+    const entry = fetchCache.get(key);
+    if (entry && Date.now() - entry.ts < FETCH_CACHE_TTL) return entry.data;
+    return null;
+  }
+  function setCachedFetch(key, data) {
+    if (fetchCache.size >= 300) {
+      const toRemove = Math.ceil(300 * 0.2);
+      const sorted = [...fetchCache.entries()].sort((a, b) => a[1].ts - b[1].ts).slice(0, toRemove);
+      for (const [k] of sorted) fetchCache.delete(k);
+    }
+    fetchCache.set(key, { data, ts: Date.now() });
+  }
+  function qualityRank(value) {
+    const q = normalizeQualityLabel(value).toLowerCase();
+    const match = q.match(/(\d{3,4})p/);
+    const height = match ? Number(match[1]) : DEFAULT_QUALITY_TIER;
+    const tier = nearestQualityTier(height);
+    return STRICT_QUALITY_TIERS.length - 1 - STRICT_QUALITY_TIERS.indexOf(tier);
+  }
+  function appendQualityToTitle(title, quality, codec, fps) {
+    const parts = [];
+    const q = normalizeQualityLabel(quality);
+    if (q && !(title || "").includes(q)) parts.push(q);
+    if (codec && codec !== "H.264") parts.push(codec);
+    if (fps && fps > 30) parts.push(`${fps}fps`);
+    if (parts.length === 0) return title;
+    return `${title} [${parts.join(" ")}]`;
+  }
+  function inferType(url) {
+    if (!url || typeof url !== "string") return null;
+    const u = url.toLowerCase();
+    if (u.includes(".m3u8") || u.includes("/hls/") || u.includes("/hls2/") || u.includes("master.m3u8") || u.includes("playlist.m3u8")) return "hls";
+    if (u.includes(".mpd")) return "dash";
+    if (/[?&]format=hls\b/.test(u) || /\/v1\/(anime|tv|movie)\?/.test(u)) return "hls";
+    if (u.includes(".mp4")) return "mp4";
+    if (u.includes(".mkv")) return "mkv";
+    if (u.includes(".webm")) return "webm";
+    if (u.includes(".ts") && !u.includes("test") && !u.includes("textures")) return "hls";
+    return null;
+  }
+  function buildEnrichedQuality(stream) {
+    const base = normalizeQualityLabel(stream.quality || "HD");
+    const parts = [base];
+    if (stream.codec) {
+      const c = String(stream.codec).toUpperCase();
+      if (c && !base.toUpperCase().includes(c)) parts.push(c);
+    }
+    if (stream.audioCodec) {
+      const a = String(stream.audioCodec).toUpperCase();
+      if (a && !parts.some((p) => p.toUpperCase() === a)) parts.push(a);
+    }
+    return parts.join(" ");
+  }
+  function formatSizeWithMetadata(size, stream) {
+    if (!size) return size;
+    const extras = [];
+    if (stream.codec) extras.push(String(stream.codec).toUpperCase());
+    if (stream.audioCodec) extras.push(String(stream.audioCodec).toUpperCase());
+    if (extras.length === 0) return size;
+    return `${size} ${extras.join(" ")}`;
+  }
+  function normalizeLanguageCode(raw) {
+    if (!raw) return null;
+    const key = String(raw).trim().toUpperCase();
+    if (!key) return null;
+    if (LANGUAGE_CODE_MAP[key]) return LANGUAGE_CODE_MAP[key];
+    const lower = key.toLowerCase();
+    return lower;
+  }
+  function inferLanguage(stream) {
+    if (stream.language) return stream.language;
+    const name = stream.name || "";
+    const match = name.match(/\((\w+)\)/);
+    if (match) {
+      const lang = match[1].toUpperCase();
+      if (["VF", "VOSTFR", "VO", "VOSTF", "VOA", "VOST"].includes(lang)) return lang;
+    }
+    return null;
+  }
+  function expandSingleStreamQualities(_0) {
+    return __async(this, arguments, function* (stream, options = {}) {
+      var _a, _b, _c, _d, _e, _f, _g;
+      if (!stream || !stream.url || typeof stream.url !== "string") return [];
+      const url = stream.url;
+      const lower = url.toLowerCase();
+      if (!lower.includes(".m3u8") && !lower.includes("/hls/")) {
+        return [__spreadProps(__spreadValues({}, stream), { quality: normalizeQualityLabel(stream.quality || "HD"), type: inferType(url) })];
+      }
+      const cacheKey = url;
+      if (!options.forceRefresh) {
+        const cached = getCachedManifest(cacheKey);
+        if (cached) return cached;
+      }
+      let res = null;
+      try {
+        res = yield withTimeout(
+          safeFetch(url, { headers: stream.headers || {}, timeout: options.manifestTimeout || 12e3 }),
+          options.manifestTimeout || 12e3,
+          "manifest-parse"
+        );
+      } catch (e) {
+        res = null;
+      }
+      if (!res) {
+        return [__spreadProps(__spreadValues({}, stream), { quality: normalizeQualityLabel(stream.quality || "HD"), type: "hls" })];
+      }
+      const manifest = yield res.text();
+      if (res.truncated || isTruncatedBody(manifest)) {
+        return [__spreadProps(__spreadValues({}, stream), { quality: normalizeQualityLabel(stream.quality || "HD"), type: "hls" })];
+      }
+      if (!/#EXT-X-STREAM-INF/i.test(manifest)) {
+        return [__spreadProps(__spreadValues({}, stream), { quality: normalizeQualityLabel(stream.quality || "HD"), type: "hls" })];
+      }
+      const lines = manifest.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+      const variants = [];
+      for (let index = 0; index < lines.length; index++) {
+        const line = lines[index];
+        if (!line.startsWith("#EXT-X-STREAM-INF:")) continue;
+        const nextLine = lines[index + 1];
+        if (!nextLine || nextLine.startsWith("#")) continue;
+        const resolution = (_a = line.match(/RESOLUTION=\d+x(\d+)/i)) == null ? void 0 : _a[1];
+        const frameRate = (_b = line.match(/FRAME-RATE=([0-9.]+)/i)) == null ? void 0 : _b[1];
+        const bandwidth = (_c = line.match(/BANDWIDTH=(\d+)/i)) == null ? void 0 : _c[1];
+        const codecs = (_d = line.match(/CODECS="([^"]+)"/i)) == null ? void 0 : _d[1];
+        let quality = resolution ? `${resolution}p` : null;
+        if (!quality && bandwidth) {
+          const bw = Number(bandwidth);
+          if (bw >= 8e6) quality = "2160p";
+          else if (bw >= 5e6) quality = "1080p";
+          else if (bw >= 25e5) quality = "720p";
+          else if (bw >= 12e5) quality = "480p";
+          else quality = "360p";
+        }
+        if (!quality && frameRate) quality = `${normalizeQualityLabel(stream.quality || "HD")}`;
+        const parsedCodec = parseCodecs(codecs);
+        const fps = frameRate ? Math.round(parseFloat(frameRate)) : null;
+        let variantUrl = nextLine;
+        try {
+          variantUrl = new URL(nextLine, url).toString();
+        } catch (e) {
+        }
+        variants.push(__spreadProps(__spreadValues({}, stream), {
+          url: variantUrl,
+          quality: normalizeQualityLabel(quality || stream.quality || "HD"),
+          type: "hls",
+          codec: ((_e = parsedCodec.video) == null ? void 0 : _e.codec) || null,
+          audioCodec: ((_f = parsedCodec.audio) == null ? void 0 : _f.codec) || null,
+          fps,
+          bandwidth: bandwidth ? parseInt(bandwidth) : null,
+          title: appendQualityToTitle(
+            stream.title || stream.name || "Stream",
+            quality || stream.quality || "HD",
+            options.includeCodec !== false ? (_g = parsedCodec.video) == null ? void 0 : _g.codec : null,
+            options.includeFps !== false ? fps : null
+          )
+        }));
+      }
+      if (variants.length === 0) {
+        return [__spreadProps(__spreadValues({}, stream), { quality: normalizeQualityLabel(stream.quality || "HD"), type: "hls" })];
+      }
+      const unique = [];
+      const seen = /* @__PURE__ */ new Set();
+      for (const variant of variants) {
+        if (seen.has(variant.url)) continue;
+        seen.add(variant.url);
+        unique.push(variant);
+      }
+      unique.sort((a, b) => qualityRank(b.quality) - qualityRank(a.quality));
+      const maxV = options.maxVariants || unique.length;
+      const trimmed = unique.slice(0, maxV);
+      setCachedManifest(cacheKey, trimmed);
+      return trimmed;
+    });
+  }
+  function filterByPreferredCodec(streams, preferred) {
+    if (!preferred || !streams.length) return streams;
+    const pref = preferred.toUpperCase();
+    const hasPreferred = streams.some((s) => {
+      var _a;
+      return ((_a = s.codec) == null ? void 0 : _a.toUpperCase()) === pref;
+    });
+    if (!hasPreferred) return streams;
+    return streams.filter((s) => {
+      var _a;
+      return ((_a = s.codec) == null ? void 0 : _a.toUpperCase()) === pref;
+    });
+  }
+  function sortStreams(streams) {
+    return [...streams].sort((a, b) => {
+      const qDiff = qualityRank(b.quality) - qualityRank(a.quality);
+      if (qDiff !== 0) return qDiff;
+      if (a.codec && b.codec) {
+        const getOrder = (c) => CODEC_PREFERENCE.indexOf(c) >= 0 ? CODEC_PREFERENCE.indexOf(c) : 99;
+        return getOrder(a.codec) - getOrder(b.codec);
+      }
+      return 0;
+    });
+  }
+  function isEnrichmentBudgetSpent(options) {
+    const deadline = Number(options && options.budgetDeadline);
+    return deadline > 0 && Date.now() > deadline;
+  }
+  function expandStreamQualities(_0) {
+    return __async(this, arguments, function* (streams, options = {}) {
+      const input = Array.isArray(streams) ? streams : [];
+      const expanded = [];
+      const manifestCap = Number(options.maxManifestFetches) > 0 ? Number(options.maxManifestFetches) : MAX_MANIFEST_EXPANSIONS;
+      const skipManifests = options.skipManifestExpansion === true;
+      let manifestFetches = 0;
+      const results = yield Promise.allSettled(
+        input.map((stream) => {
+          const url = stream && typeof stream.url === "string" ? stream.url : "";
+          const lower = url.toLowerCase();
+          const needsManifest = lower.includes(".m3u8") || lower.includes("/hls/");
+          if (!needsManifest) return expandSingleStreamQualities(stream, options);
+          if (skipManifests || isEnrichmentBudgetSpent(options) || manifestFetches >= manifestCap) {
+            return Promise.resolve([__spreadProps(__spreadValues({}, stream), {
+              quality: normalizeQualityLabel(stream && stream.quality || "HD"),
+              type: "hls"
+            })]);
+          }
+          manifestFetches++;
+          return expandSingleStreamQualities(stream, options);
+        })
+      );
+      for (let i = 0; i < results.length; i++) {
+        const r = results[i];
+        const stream = input[i];
+        if (r.status === "fulfilled") {
+          for (const variant of r.value) {
+            expanded.push(variant);
+          }
+        } else if (stream) {
+          expanded.push(__spreadProps(__spreadValues({}, stream), { quality: normalizeQualityLabel(stream.quality || "HD"), type: inferType(stream.url) }));
+        }
+      }
+      const deduped = [];
+      const seen = /* @__PURE__ */ new Set();
+      for (const stream of expanded) {
+        if (!(stream == null ? void 0 : stream.url)) continue;
+        if (isKnownFakeDirectUrl(stream.url)) continue;
+        const rawLang = stream.language || inferLanguage(stream) || "";
+        const dedupKey = `${stream.url}|${String(rawLang).toUpperCase()}`;
+        if (seen.has(dedupKey)) continue;
+        seen.add(dedupKey);
+        deduped.push(stream);
+      }
+      let sorted = sortStreams(deduped);
+      sorted = sorted.map((s) => {
+        const rawLang = inferLanguage(s) || s.language || null;
+        const lang = normalizeLanguageCode(rawLang);
+        const baseTitle = s.title || s.name;
+        let title = s.title;
+        if (rawLang && lang && baseTitle && String(rawLang).toUpperCase() !== lang.toUpperCase() && !baseTitle.toUpperCase().includes(String(rawLang).toUpperCase())) {
+          title = `${baseTitle} [${String(rawLang).toUpperCase()}]`;
+        }
+        const enrichedQuality = buildEnrichedQuality(s);
+        return __spreadProps(__spreadValues(__spreadValues(__spreadValues({}, s), title !== s.title ? { title } : {}), enrichedQuality !== s.quality ? { quality: enrichedQuality } : {}), {
+          type: s.type || inferType(s.url),
+          language: lang
+        });
+      });
+      const directVideoRe = /\.(mp4|mkv|webm)(\?.*)?$/i;
+      const sizeProbeEnabled = options.sizeProbe !== false && !isEnrichmentBudgetSpent(options);
+      const streamsNeedingSize = sizeProbeEnabled ? sorted.filter((s) => !s.size && s.url && directVideoRe.test(s.url)).slice(0, MAX_SIZE_PROBES) : [];
+      if (streamsNeedingSize.length > 0) {
+        const sizeResults = yield Promise.allSettled(
+          streamsNeedingSize.map((s) => fetchVideoSize(s.url, s.headers))
+        );
+        for (let i = 0; i < streamsNeedingSize.length; i++) {
+          const size = sizeResults[i].status === "fulfilled" ? sizeResults[i].value : null;
+          if (size) streamsNeedingSize[i].size = formatSizeWithMetadata(size, streamsNeedingSize[i]);
+        }
+      }
+      if (options.preferredCodec) {
+        return filterByPreferredCodec(sorted, options.preferredCodec);
+      }
+      return sorted;
+    });
+  }
+  function safeFetch(_0) {
+    return __async(this, arguments, function* (url, options = {}) {
+      const start = Date.now();
+      const SLOW_THRESHOLD = 15e3;
+      const method = (options.method || "GET").toUpperCase();
+      let headerTag = "";
+      if (options.headers && typeof options.headers === "object") {
+        const keys = Object.keys(options.headers).sort();
+        if (keys.length) {
+          headerTag = "|" + keys.map((k) => `${k.toLowerCase()}=${String(options.headers[k]).slice(0, 80)}`).join("&");
+        }
+      }
+      const cacheKey = method + "|" + url + headerTag;
+      if (method === "GET") {
+        const cached = getCachedFetch(cacheKey);
+        if (cached) {
+          return {
+            text: () => Promise.resolve(cached.bodyText),
+            json: () => __async(null, null, function* () {
+              try {
+                return JSON.parse(cached.bodyText);
+              } catch (e) {
+                throw e;
+              }
+            }),
+            ok: cached.ok,
+            status: cached.status,
+            url: cached.finalUrl || url,
+            headers: cached.headers || {},
+            truncated: false
+          };
+        }
+      }
+      try {
+        const _a = options, { timeout, signal: externalSignal } = _a, rest = __objRest(_a, ["timeout", "signal"]);
+        const effectiveTimeout = timeout > 0 ? timeout : DEFAULT_FETCH_TIMEOUT;
+        if (isAborted(externalSignal)) {
+          return null;
+        }
+        const fetchOpts = __spreadProps(__spreadValues({}, rest), {
+          headers: __spreadValues(__spreadValues({}, HEADERS), rest.headers),
+          redirect: "follow"
+        });
+        const hasNativeTimeout = typeof AbortSignal !== "undefined" && typeof AbortSignal.timeout !== "undefined";
+        if (effectiveTimeout > 0 && hasNativeTimeout) {
+          const timeoutSignal = AbortSignal.timeout(effectiveTimeout);
+          if (externalSignal) {
+            const controller = createAbortController();
+            if (controller) {
+              fetchOpts.signal = controller.signal;
+              const onAbort = () => {
+                controller.abort();
+              };
+              try {
+                externalSignal.addEventListener("abort", onAbort);
+              } catch (_) {
+              }
+              try {
+                timeoutSignal.addEventListener("abort", onAbort);
+              } catch (_) {
+              }
+            } else {
+              fetchOpts.signal = externalSignal;
+            }
+          } else {
+            fetchOpts.signal = timeoutSignal;
+          }
+        } else if (externalSignal) {
+          fetchOpts.signal = externalSignal;
+        }
+        const response = yield fetch(url, fetchOpts);
+        const elapsed = Date.now() - start;
+        if (elapsed > SLOW_THRESHOLD) {
+          console.warn(`[safeFetch] Slow request (${elapsed}ms): ${(url || "").slice(0, 120)}`);
+        }
+        if (!response) return null;
+        const status = response.status;
+        if (status === 0) return null;
+        let bodyText = "";
+        let truncated = false;
+        try {
+          const rawText = yield response.text();
+          if (rawText && rawText.endsWith(RUNTIME_TRUNCATION_SUFFIX)) {
+            truncated = true;
+            bodyText = rawText;
+          } else if (rawText && rawText.length >= MAX_SAFE_FETCH_BODY_BYTES) {
+            truncated = true;
+            console.warn(`[safeFetch] Response truncated (${rawText.length} bytes > ${MAX_SAFE_FETCH_BODY_BYTES}): ${(url || "").slice(0, 100)}`);
+            bodyText = rawText.slice(0, MAX_SAFE_FETCH_BODY_BYTES);
+          } else {
+            bodyText = rawText || "";
+          }
+        } catch (e) {
+          bodyText = "";
+        }
+        if (truncated && responseLooksHtml(response, bodyText)) {
+          console.warn(`[safeFetch] HTML body truncated \u2192 refusing partial parse: ${(url || "").slice(0, 100)}`);
+          return null;
+        }
+        if (method === "GET" && status >= 200 && status < 300 && !truncated) {
+          setCachedFetch(cacheKey, {
+            bodyText,
+            ok: true,
+            status,
+            finalUrl: response.url,
+            headers: response.headers
+          });
+        }
+        return {
+          text: () => Promise.resolve(bodyText),
+          json: () => __async(null, null, function* () {
+            try {
+              return JSON.parse(bodyText);
+            } catch (e) {
+              throw e;
+            }
+          }),
+          ok: response.ok,
+          status,
+          url: response.url,
+          headers: response.headers,
+          truncated
+        };
+      } catch (e) {
+        const elapsed = Date.now() - start;
+        if (elapsed > SLOW_THRESHOLD) {
+          console.warn(`[safeFetch] Slow request failed (${elapsed}ms): ${(url || "").slice(0, 120)}`);
+        }
+        return null;
+      }
+    });
+  }
+  function unpack(code) {
+    try {
+      if (!code.includes("p,a,c,k,e,d")) return code;
+      const extractEvalBlocks = (input) => {
+        const blocks2 = [];
+        let pos = 0;
+        while (true) {
+          const start = input.indexOf("eval(function(p,a,c,k,e,d)", pos);
+          if (start === -1) break;
+          let i = start;
+          let depth = 0;
+          let inSingle = false;
+          let inDouble = false;
+          let escaped = false;
+          for (; i < input.length; i++) {
+            const ch = input[i];
+            if (escaped) {
+              escaped = false;
+              continue;
+            }
+            if (ch === "\\") {
+              escaped = true;
+              continue;
+            }
+            if (!inDouble && ch === "'") inSingle = !inSingle;
+            else if (!inSingle && ch === '"') inDouble = !inDouble;
+            if (inSingle || inDouble) continue;
+            if (ch === "(") depth++;
+            else if (ch === ")") {
+              depth--;
+              if (depth === 0) {
+                i++;
+                break;
+              }
+            }
+          }
+          if (i > start) blocks2.push(input.slice(start, i));
+          pos = i;
+        }
+        return blocks2;
+      };
+      const decodeBlock = (block) => {
+        const parseString = (src, start) => {
+          const quote = src[start];
+          if (quote !== "'" && quote !== '"') return null;
+          let i2 = start + 1;
+          let out = "";
+          let escaped = false;
+          for (; i2 < src.length; i2++) {
+            const ch = src[i2];
+            if (escaped) {
+              out += ch;
+              escaped = false;
+              continue;
+            }
+            if (ch === "\\") {
+              escaped = true;
+              continue;
+            }
+            if (ch === quote) return { value: out, end: i2 + 1 };
+            out += ch;
+          }
+          return null;
+        };
+        const skipWs = (src, i2) => {
+          while (i2 < src.length && /\s/.test(src[i2])) i2++;
+          return i2;
+        };
+        const parseIntAt = (src, i2) => {
+          i2 = skipWs(src, i2);
+          const m = src.slice(i2).match(/^\d+/);
+          if (!m) return null;
+          return { value: parseInt(m[0], 10), end: i2 + m[0].length };
+        };
+        const callStart = block.indexOf("}(");
+        if (callStart === -1) return null;
+        let i = callStart + 2;
+        i = skipWs(block, i);
+        const pStr = parseString(block, i);
+        if (!pStr) return null;
+        let p = pStr.value;
+        i = skipWs(block, pStr.end);
+        if (block[i] !== ",") return null;
+        const aNum = parseIntAt(block, i + 1);
+        if (!aNum) return null;
+        const a = aNum.value;
+        i = skipWs(block, aNum.end);
+        if (block[i] !== ",") return null;
+        const cNum = parseIntAt(block, i + 1);
+        if (!cNum) return null;
+        let c = cNum.value;
+        i = skipWs(block, cNum.end);
+        if (block[i] !== ",") return null;
+        const kStr = parseString(block, skipWs(block, i + 1));
+        if (!kStr) return null;
+        const splitPart = block.slice(kStr.end, kStr.end + 20);
+        if (!/\.split\(\s*['"]\|['"]\s*\)/.test(splitPart)) return null;
+        const k = kStr.value.split("|");
+        const e = (x) => (x < a ? "" : e(parseInt(x / a, 10))) + ((x = x % a) > 35 ? String.fromCharCode(x + 29) : x.toString(36));
+        const dict = {};
+        while (c--) dict[e(c)] = k[c] || e(c);
+        return p.replace(/\b\w+\b/g, (w) => dict[w] || w);
+      };
+      let result = code;
+      const blocks = extractEvalBlocks(code);
+      for (const block of blocks) {
+        try {
+          const decoded = decodeBlock(block);
+          if (decoded) result = result.replace(block, decoded);
+        } catch (e) {
+        }
+      }
+      return result;
+    } catch (err) {
+      return code;
+    }
+  }
+  function resolveSibnet(url) {
+    return __async(this, null, function* () {
+      try {
+        const res = yield safeFetch(url, { headers: { "Referer": "https://video.sibnet.ru/" } });
+        if (!res) return { url };
+        const html = yield res.text();
+        let videoUrl = null;
+        const fileMatch = html.match(/file\s*:\s*["']([^"']*\.mp4[^"']*)['"]/i);
+        if (fileMatch) {
+          videoUrl = fileMatch[1];
+        }
+        if (!videoUrl) {
+          const srcMatch = html.match(/src\s*:\s*["']([^"']*\.mp4[^"']*)['"]/i);
+          if (srcMatch) videoUrl = srcMatch[1];
+        }
+        if (!videoUrl) {
+          const playerSrcMatch = html.match(/player\.src\(\s*\[\s*\{\s*src\s*:\s*["']([^"']+\.mp4[^"']*)['"]/i);
+          if (playerSrcMatch) videoUrl = playerSrcMatch[1];
+        }
+        if (!videoUrl) {
+          const genericMatch = html.match(/["']((?:https?:)?\/\/[^"'\s]+\.mp4[^"'\s]*)["']/i);
+          if (genericMatch) videoUrl = genericMatch[1];
+        }
+        if (!videoUrl) return { url };
+        if (videoUrl.startsWith("//")) videoUrl = "https:" + videoUrl;
+        else if (videoUrl.startsWith("/")) videoUrl = "https://video.sibnet.ru" + videoUrl;
+        try {
+          const headRes = yield safeFetch(videoUrl, {
+            method: "HEAD",
+            headers: { "Referer": "https://video.sibnet.ru/" },
+            timeout: 5e3
+          });
+          if (headRes && headRes.url && headRes.url !== videoUrl && headRes.url.includes(".mp4")) {
+            videoUrl = headRes.url;
+          }
+        } catch (_) {
+        }
+        return { url: videoUrl, headers: { "Referer": "https://video.sibnet.ru/" } };
+      } catch (e) {
+      }
+      return { url };
+    });
+  }
+  function resolveVidmoly(url) {
+    return __async(this, null, function* () {
+      var _a, _b;
+      try {
+        const originalDomain = ((_a = url.match(/^https?:\/\/([^/]+)/)) == null ? void 0 : _a[1]) || "";
+        const originalReferer = originalDomain ? `https://${originalDomain}/` : "https://vidmoly.biz/";
+        const tldVariants = ["biz", "net", "ru", "is", "to"];
+        const domains = [url];
+        for (const tld of tldVariants) {
+          const altUrl = url.replace(/vidmoly\.(net|to|ru|is|biz|me)/, `vidmoly.${tld}`);
+          if (altUrl !== url) domains.push(altUrl);
+        }
+        const uniqueDomains = [...new Set(domains)].slice(0, 4);
+        for (const fetchUrl of uniqueDomains) {
+          try {
+            const fetchDomain = ((_b = fetchUrl.match(/^https?:\/\/([^/]+)/)) == null ? void 0 : _b[1]) || "";
+            const ref = fetchDomain ? `https://${fetchDomain}/` : originalReferer;
+            let res = yield safeFetch(fetchUrl, { headers: { "Referer": ref, "Origin": ref } });
+            if (!res || !res.ok) continue;
+            const serveRefOf = (r, fallbackRef) => {
+              var _a2;
+              const finalDomain = r && r.url && ((_a2 = r.url.match(/^https?:\/\/([^/]+)/)) == null ? void 0 : _a2[1]) || "";
+              return finalDomain ? `https://${finalDomain}/` : fallbackRef;
+            };
+            let html = yield res.text();
+            const hasJsRedirect = /window\.location\.replace/.test(html);
+            if (html.length < 500 && !hasJsRedirect || html.includes("finisheddaysflamboyant")) continue;
+            if (html.includes("p,a,c,k,e,d") || html.includes("eval(function")) html = unpack(html);
+            const match = html.match(/file\s*:\s*["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/i) || html.match(/sources\s*:\s*\[["']([^"']+\.(?:m3u8|mp4)[^"']*)["']\]/i) || html.match(/["'](https?:\/\/[^"']+\.(?:m3u8|mp4)[^"']*)["']/i);
+            if (match) {
+              const serveRef = serveRefOf(res, ref);
+              return { url: match[1], headers: { "Referer": serveRef, "Origin": serveRef } };
+            }
+            const jsRedirect = html.match(/window\.location\.replace\(['"]([^'"]+)['"]\)/) || html.match(/window\.location\.href\s*=\s*['"]([^'"]+)['"]/);
+            if (jsRedirect && jsRedirect[1] !== fetchUrl) {
+              res = yield safeFetch(jsRedirect[1], { headers: { "Referer": ref, "Origin": ref } });
+              if (res) {
+                html = yield res.text();
+                if (html.includes("p,a,c,k,e,d") || html.includes("eval(function")) html = unpack(html);
+                const match2 = html.match(/file\s*:\s*["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/i) || html.match(/sources\s*:\s*\[["']([^"']+\.(?:m3u8|mp4)[^"']*)["']\]/i) || html.match(/["'](https?:\/\/[^"']+\.(?:m3u8|mp4)[^"']*)["']/i);
+                if (match2) {
+                  const serveRef = serveRefOf(res, ref);
+                  return { url: match2[1], headers: { "Referer": serveRef, "Origin": serveRef } };
+                }
+              }
+            }
+          } catch (e) {
+          }
+        }
+      } catch (e) {
+      }
+      return { url };
+    });
+  }
+  function resolveMailRu(url) {
+    return __async(this, null, function* () {
+      var _a;
+      try {
+        const id = (_a = url.match(/\/video\/embed\/(\d+)/)) == null ? void 0 : _a[1];
+        if (!id) return { url };
+        const metaUrl = `https://my.mail.ru/+/video/meta/${id}`;
+        const res = yield safeFetch(metaUrl, {
+          headers: { "Referer": url, "Accept": "application/json" }
+        });
+        if (!res || !res.ok) return { url };
+        let data = null;
+        try {
+          data = JSON.parse(yield res.text());
+        } catch (e) {
+          return { url };
+        }
+        const videos = Array.isArray(data == null ? void 0 : data.videos) ? data.videos : [];
+        const sorted = [...videos].sort(
+          (a, b) => (parseInt(b.key, 10) || 0) - (parseInt(a.key, 10) || 0)
+        );
+        const best = sorted.find((v) => v && v.url);
+        if (!best) return { url };
+        let videoUrl = best.url.startsWith("//") ? "https:" + best.url : best.url;
+        return {
+          url: videoUrl,
+          headers: { "Referer": "https://my.mail.ru/" },
+          quality: best.key || void 0
+        };
+      } catch (e) {
+      }
+      return { url };
+    });
+  }
+  function resolveUqload(url) {
+    return __async(this, null, function* () {
+      var _a;
+      const normalizedPath = url.replace(/^https?:\/\/[^/]+/, "");
+      const originalDomain = ((_a = url.match(/^https?:\/\/([^/]+)/)) == null ? void 0 : _a[1]) || "uqload.co";
+      const fallbackDomains = [originalDomain];
+      if (originalDomain.endsWith(".bz")) fallbackDomains.push("uqload.co", "uqload.to");
+      if (originalDomain.endsWith(".to")) fallbackDomains.push("uqload.co");
+      if (originalDomain.endsWith(".cx")) fallbackDomains.push("uqload.co", "uqload.vc");
+      const uniqueDomains = [...new Set(fallbackDomains)];
+      const EXPIRED_MARKERS = [
+        "file is no longer available",
+        "expired or has been deleted",
+        "file no longer exists"
+      ];
+      const isExpiredPage = (html) => {
+        const low = html.toLowerCase();
+        return EXPIRED_MARKERS.some((m) => low.includes(m));
+      };
+      const isRestrictedStub = (html) => html.length < 200 && /restricted for this domain/i.test(html);
+      let fetchedPages = 0;
+      let restrictedPages = 0;
+      const refererChain = [
+        `https://${uniqueDomains[0]}/`,
+        // self (comportement historique, autres providers)
+        "https://lecteurvideo.com/",
+        // parent lecteurvideo (chaîne wookafr)
+        ""
+        // sans Referer
+      ];
+      const extractFile = (content) => content.match(/file\s*:\s*["']([^"']+\.(?:mp4|m3u8)[^"']*)["']/i) || content.match(/sources\s*:\s*\[[^\]]*?\{[^}]*?file\s*:\s*["']([^"']+\.(?:mp4|m3u8)[^"']*)["']/i) || content.match(/sources\s*:\s*\[["']([^"']+\.(?:mp4|m3u8)[^"']*)["']\]/i) || content.match(/["'](https?:\/\/[^"']*\/hls\d?\/[^"']*\.m3u8[^"']*)["']/i) || content.match(/["'](https?:\/\/[^"']+\.mp4[^"']*)["']/i);
+      for (const domain of uniqueDomains) {
+        const tryUrl = `https://${domain}${normalizedPath}`;
+        for (const referer of refererChain) {
+          try {
+            const headers = __spreadValues({}, HEADERS);
+            if (referer) headers["Referer"] = referer;
+            const res = yield safeFetch(tryUrl, { headers });
+            if (!res) continue;
+            let html = yield res.text();
+            if (isExpiredPage(html)) {
+              console.warn(`[Resolver] uqload embed dead (expired/deleted): ${url.slice(0, 80)}`);
+              return { url, isDead: true };
+            }
+            fetchedPages++;
+            if (isRestrictedStub(html)) {
+              restrictedPages++;
+              continue;
+            }
+            if (!html.includes("p,a,c,k,e,d") && !html.includes("eval(function") && !extractFile(html)) continue;
+            if (html.includes("p,a,c,k,e,d") || html.includes("eval(function")) html = unpack(html);
+            const match = extractFile(html);
+            if (match) {
+              const playHeaders = { "Referer": `https://${domain}/` };
+              return { url: match[1], headers: playHeaders };
+            }
+          } catch (e) {
+          }
+        }
+      }
+      if (fetchedPages > 0 && restrictedPages === fetchedPages) {
+        console.warn(`[Resolver] uqload embed dead (restricted on all referers): ${url.slice(0, 80)}`);
+        return { url, isDead: true };
+      }
+      return { url };
+    });
+  }
+  function decodeVoePlayerConfig(html) {
+    if (!html || html.indexOf("application/json") < 0) return null;
+    const m = html.match(/<script[^>]*type=["']application\/json["'][^>]*>([\s\S]*?)<\/script>/);
+    if (!m) return null;
+    let payload = null;
+    try {
+      const arr = JSON.parse(m[1]);
+      if (Array.isArray(arr) && typeof arr[0] === "string") payload = arr[0];
+      else if (typeof arr === "string") payload = arr;
+    } catch (e) {
+      return null;
+    }
+    if (!payload) return null;
+    const lenientB64 = (s) => {
+      const clean = String(s || "").replace(/[^A-Za-z0-9+/=]/g, "");
+      const pad = clean.length % 4;
+      const padded = pad ? clean + "=".repeat(4 - pad) : clean;
+      return _atob(padded);
+    };
+    const rot13 = (s) => s.replace(/[a-zA-Z]/g, (c) => {
+      const base = c <= "Z" ? 65 : 97;
+      return String.fromCharCode((c.charCodeAt(0) - base + 13) % 26 + base);
+    });
+    try {
+      let s = rot13(payload);
+      s = lenientB64(s);
+      let shifted = "";
+      for (let i = 0; i < s.length; i++) shifted += String.fromCharCode(s.charCodeAt(i) - 3);
+      const reversed = shifted.split("").reverse().join("");
+      const decoded = lenientB64(reversed);
+      const obj = JSON.parse(decoded);
+      if (obj && typeof obj === "object" && typeof obj.source === "string" && /^https?:\/\//.test(obj.source)) {
+        return obj;
+      }
+    } catch (e) {
+    }
+    return null;
+  }
+  function resolveVoe(url) {
+    return __async(this, null, function* () {
+      try {
+        const res = yield safeFetch(url);
+        if (!res) return { url };
+        let html = yield res.text();
+        if (html.includes('<div id="root">') && html.includes("/assets/index-")) {
+          return { url };
+        }
+        let fetchUrl = url;
+        for (let hop = 0; hop < 3; hop++) {
+          const redirect = html.match(/window\.location\.href\s*=\s*['"]([^'"]+)['"]/);
+          if (!redirect || redirect[1] === fetchUrl) break;
+          fetchUrl = redirect[1];
+          const res2 = yield safeFetch(fetchUrl);
+          if (!res2) break;
+          html = yield res2.text();
+        }
+        const cfg = decodeVoePlayerConfig(html);
+        if (cfg) {
+          const directUrl = String(cfg.direct_access_url || "");
+          const masterUrl = String(cfg.source || "");
+          const finalUrl = masterUrl || directUrl;
+          if (finalUrl && !isKnownFakeDirectUrl(finalUrl)) {
+            return { url: finalUrl, headers: { "Referer": fetchUrl + "/" } };
+          }
+          if (directUrl && !isKnownFakeDirectUrl(directUrl)) {
+            return { url: directUrl, headers: { "Referer": fetchUrl + "/" } };
+          }
+        }
+        if (html.includes("p,a,c,k,e,d") || html.includes("eval(function")) html = unpack(html);
+        const match = html.match(/'hls'\s*:\s*'([^']+)'/) || html.match(/"hls"\s*:\s*"([^"]+)"/) || html.match(/file\s*:\s*["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/i) || html.match(/sources\s*:\s*\[["']([^"']+\.(?:m3u8|mp4)[^"']*)["']\]/i) || html.match(/https?:\/\/[^"']+\.m3u8[^"']*/);
+        if (match) {
+          let videoUrl = match[1] || match[0];
+          if (videoUrl.includes("base64")) videoUrl = _atob(videoUrl.split(",")[1] || videoUrl);
+          if (videoUrl.includes("test-videos.co.uk") || isKnownFakeDirectUrl(videoUrl)) return { url };
+          return { url: videoUrl, headers: { "Referer": fetchUrl } };
+        }
+      } catch (e) {
+      }
+      return { url };
+    });
+  }
+  function resolveFsvidVidzy(url) {
+    return __async(this, null, function* () {
+      try {
+        const embedDomain = (url.match(/^https?:\/\/([^/]+)/) || [])[1] || "";
+        const embedRef = embedDomain ? `https://${embedDomain}/` : "https://fsvid.lol/";
+        const res = yield safeFetch(url, { headers: { Referer: embedRef } });
+        if (!res) return { url };
+        let html = yield res.text();
+        if (html.includes("p,a,c,k,e,d") || html.includes("eval(function")) html = unpack(html);
+        let videoUrl = null;
+        const hostname = embedDomain ? embedDomain.split("/")[0] : (embedRef.split("//")[1] || "").replace(/\//g, "");
+        const newPattern = html.match(/\}\)\(["']([A-Za-z0-9+/=_-]{50,})["']\)/);
+        if (newPattern && html.includes("reverse().join")) {
+          const b64 = newPattern[1].replace(/-/g, "+").replace(/_/g, "/");
+          let bin = "";
+          try {
+            bin = atob(b64);
+          } catch (e) {
+          }
+          if (bin) {
+            let H = 0;
+            for (let j = 0; j < hostname.length; j++) {
+              H = H + hostname.charCodeAt(j) & 255;
+            }
+            const a = bin.split("").reverse().join("");
+            for (let BC = 0; BC < 256; BC++) {
+              let decoded = "";
+              for (let i = 0; i < a.length; i++) {
+                const kk = 61 + i * 89 + H + BC & 255;
+                decoded += String.fromCharCode(a.charCodeAt(i) ^ kk);
+              }
+              if (/^https?:\/\//.test(decoded) && decoded.includes(".m3u8") && !decoded.includes("/troll/")) {
+                videoUrl = decoded;
+                break;
+              }
+            }
+          }
+        }
+        if (!videoUrl) {
+          const legacyPattern = /(?:var|let|const)\s*k=\[([0-9,\s]+)\],b=atob\(s\)[\s\S]*?return\s+\w+\}\)\(["']([A-Za-z0-9+/=_-]+)["']\)/g;
+          let match;
+          while ((match = legacyPattern.exec(html)) !== null) {
+            const key = match[1].split(",").map((n) => parseInt(n, 10));
+            const b64 = match[2].replace(/-/g, "+").replace(/_/g, "/");
+            let bin = "";
+            try {
+              bin = atob(b64);
+            } catch (e) {
+              continue;
+            }
+            let decoded = "";
+            for (let i = 0; i < bin.length; i++) {
+              decoded += String.fromCharCode(bin.charCodeAt(i) ^ key[i % key.length]);
+            }
+            if (decoded.startsWith("http") && decoded.includes(".m3u8") && !decoded.includes("/troll/")) {
+              videoUrl = decoded;
+              break;
+            }
+          }
+        }
+        if (!videoUrl) return { url };
+        const referer = url.includes("vidzy") ? "https://vidzy.live/" : "https://fsvid.lol/";
+        return { url: videoUrl, headers: { Referer: referer } };
+      } catch (e) {
+      }
+      return { url };
+    });
+  }
+  function resolveStreamtape(url) {
+    return __async(this, null, function* () {
+      try {
+        const res = yield safeFetch(url);
+        if (!res) return { url };
+        let html = yield res.text();
+        if (html.includes("p,a,c,k,e,d")) html = unpack(html);
+        const match = html.match(/robotlink['"]\)\.innerHTML\s*=\s*['"]([^'"]+)['"]\s*\+\s*([^;]+)/);
+        if (match) {
+          let videoUrl = "https:" + match[1];
+          const parts = match[2].split("+");
+          for (const p of parts) {
+            const innerMatch = p.match(/['"]([^'"]+)['"]/);
+            if (innerMatch) {
+              let val = innerMatch[1];
+              const sub = p.match(/substring\((\d+)\)/);
+              if (sub) val = val.substring(parseInt(sub[1]));
+              videoUrl += val;
+            }
+          }
+          return { url: videoUrl, headers: { "Referer": "https://streamtape.com/" } };
+        }
+      } catch (e) {
+      }
+      return { url };
+    });
+  }
+  function resolveSendvid(url) {
+    return __async(this, null, function* () {
+      try {
+        if (url.includes("daisukianime")) {
+          const idMatch = url.match(/[?&]id=([a-z0-9]+)/i);
+          if (idMatch) url = `https://sendvid.com/embed/${idMatch[1]}`;
+        }
+        const embedUrl = url.includes("/embed/") ? url : url.replace(/sendvid\.com\/([a-z0-9]+)/i, "sendvid.com/embed/$1");
+        const res = yield safeFetch(embedUrl, { headers: { "Referer": "https://sendvid.com/" } });
+        if (!res) return { url };
+        if (res.status === 502 || res.status === 503) {
+          console.warn(`[Sendvid] Service temporarily unavailable (${res.status}): ${embedUrl.slice(0, 60)}`);
+          return { url: embedUrl, isDirect: false };
+        }
+        const html = yield res.text();
+        const match = html.match(/video_source\s*:\s*["']([^"']+\.mp4[^"']*)["|']/) || html.match(/source\s+src=["']([^"']+\.mp4[^"']*)["|']/) || html.match(/<source[^>]+src=["']([^"']+\.(?:mp4|m3u8)[^"']*)["']/) || html.match(/file\s*:\s*["']([^"']+\.(?:mp4|m3u8)[^"']*)["|']/) || html.match(/["'](https?:\/\/[^"']+\.mp4[^"']*)["']/);
+        if (match) return { url: match[1], headers: { "Referer": "https://sendvid.com/" } };
+      } catch (e) {
+      }
+      return { url };
+    });
+  }
+  function resolveLuluvid(url) {
+    return __async(this, null, function* () {
+      try {
+        const res = yield safeFetch(url);
+        if (!res) return { url };
+        let html = yield res.text();
+        if (html.includes("p,a,c,k,e,d")) html = unpack(html);
+        const match = html.match(/sources\s*:\s*\[["']([^"']+\.(?:m3u8|mp4)[^"']*)["']\]/) || html.match(/file\s*:\s*["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/);
+        if (match) {
+          let videoUrl = match[1];
+          if (videoUrl.includes("base64")) videoUrl = _atob(videoUrl.split(",")[1] || videoUrl);
+          return { url: videoUrl, headers: { "Referer": url } };
+        }
+      } catch (e) {
+      }
+      return { url };
+    });
+  }
+  function resolveHGCloud(url) {
+    return __async(this, null, function* () {
+      try {
+        const res = yield safeFetch(url);
+        if (!res) return { url };
+        const html = yield res.text();
+        const match = html.match(/["'](https?:\/\/[^"']+\.m3u8[^"']*)["']/);
+        if (match) return { url: match[1], headers: { "Referer": url } };
+      } catch (e) {
+      }
+      return { url };
+    });
+  }
+  function resolveDood(url) {
+    return __async(this, null, function* () {
+      var _a, _b;
+      try {
+        const domain = ((_a = url.match(/https?:\/\/([^\/]+)/)) == null ? void 0 : _a[1]) || "dood.to";
+        let currentUrl = url;
+        let res = yield safeFetch(currentUrl);
+        if (!res) return { url };
+        let finalUrl = res.url || currentUrl;
+        const finalDomain = ((_b = finalUrl.match(/https?:\/\/([^\/]+)/)) == null ? void 0 : _b[1]) || domain;
+        let html = yield res.text();
+        if (finalDomain !== domain) {
+          currentUrl = finalUrl;
+        }
+        res = null;
+        if (html.includes("eval(function(p,a,c,k,e,d)")) html = unpack(html);
+        const passMatch = html.match(/\$\.get\(['"]\/pass_md5\/([^'"]+)['"]/) || html.match(/pass_md5\/([^'"\s]+)['"]/);
+        if (passMatch) {
+          const token = passMatch[1];
+          const passUrl = `https://${finalDomain}/pass_md5/${token}`;
+          const passRes = yield safeFetch(passUrl, { headers: { "Referer": currentUrl } });
+          if (passRes && passRes.ok) {
+            const content = yield passRes.text();
+            const randomStr = Math.random().toString(36).substring(2, 12);
+            return {
+              url: content + randomStr + "?token=" + token + "&expiry=" + Date.now(),
+              headers: { "Referer": `https://${finalDomain}/` }
+            };
+          }
+        }
+      } catch (e) {
+      }
+      return { url };
+    });
+  }
+  function resolveMyTV(url) {
+    return __async(this, null, function* () {
+      try {
+        const res = yield safeFetch(url, { headers: { "Referer": "https://www.myvi.ru/" } });
+        if (!res) return { url };
+        let html = yield res.text();
+        if (html.includes("eval(function(p,a,c,k,e,d)")) html = unpack(html);
+        const match = html.match(/["'](?:file|src|url|stream_url)["']\s*:\s*["']([^"']+\.(?:mp4|m3u8)[^"']*)["']/) || html.match(/["'](https?:\/\/[^"']+\.(?:mp4|m3u8)[^"']*)["']/) || html.match(/source\s+src=["']([^"']+\.(?:mp4|m3u8)[^"']*)/);
+        if (match) return { url: match[1], headers: { "Referer": "https://www.myvi.ru/" } };
+        const idMatch = url.match(/\/(?:embed\/|watch\/|video\/)([a-zA-Z0-9_-]+)/);
+        if (idMatch) {
+          const apiUrl = `https://www.myvi.ru/api/video/${idMatch[1]}`;
+          const apiRes = yield safeFetch(apiUrl, { headers: { "Referer": url } });
+          if (apiRes) {
+            const data = yield apiRes.text();
+            const apiMatch = data.match(/["'](?:url|src|file)["']\s*:\s*["']([^"']+\.(?:mp4|m3u8)[^"']*)["']/);
+            if (apiMatch) return { url: apiMatch[1], headers: { "Referer": "https://www.myvi.ru/" } };
+          }
+        }
+      } catch (e) {
+      }
+      return { url };
+    });
+  }
+  function resolveYounetu(url) {
+    return __async(this, null, function* () {
+      var _a;
+      try {
+        const origin = ((_a = url.match(/^https?:\/\/[^/]+/)) == null ? void 0 : _a[0]) || "https://younetu.org";
+        const res = yield safeFetch(url, { headers: { "Referer": origin + "/" } });
+        if (!res) return { url };
+        let html = yield res.text();
+        if (html.includes("p,a,c,k,e,d") || html.includes("eval(function")) html = unpack(html);
+        const match = html.match(/src\s*:\s*["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/i) || html.match(/file\s*:\s*["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/i) || html.match(/sources\s*:\s*\[["']([^"']+\.(?:m3u8|mp4)[^"']*)["']\]/i) || html.match(/["'](https?:\/\/[^"']+\.(?:m3u8|mp4)[^"']*)["']/i);
+        if (match) {
+          return { url: match[1], headers: { "Referer": origin + "/" } };
+        }
+      } catch (e) {
+      }
+      return { url };
+    });
+  }
+  function resolveVidoza(url) {
+    return __async(this, null, function* () {
+      try {
+        const res = yield safeFetch(url, { headers: { "Referer": "https://vidoza.net/" } });
+        if (!res) return { url };
+        const html = yield res.text();
+        const match = html.match(/src\s*:\s*["']([^"']+\.(?:mp4|m3u8)[^"']*)["']/i) || html.match(/file\s*:\s*["']([^"']+\.(?:mp4|m3u8)[^"']*)["']/i) || html.match(/["'](https?:\/\/[^"']+\.(?:mp4|m3u8)[^"']*)["']/i);
+        if (match) {
+          return { url: match[1], headers: { "Referer": "https://vidoza.net/" } };
+        }
+      } catch (e) {
+      }
+      return { url };
+    });
+  }
+  function resolveXtremeStream(url) {
+    return __async(this, null, function* () {
+      var _a, _b, _c;
+      try {
+        const origin = ((_a = url.match(/^https?:\/\/[^/]+/)) == null ? void 0 : _a[0]) || "https://lecteur2.xtremestream.xyz";
+        const res = yield safeFetch(url, {
+          headers: { "Referer": "https://lecteurvideo.com/" },
+          timeout: 12e3
+        });
+        if (!res) return { url };
+        const html = yield res.text();
+        if (!html || html.length < 100) return { url };
+        const videoId = (_b = html.match(/var\s+video_id\s*=\s*[`"']([A-Za-z0-9_-]+)[`"']/)) == null ? void 0 : _b[1];
+        const loaderUrl = (_c = html.match(/var\s+m3u8_loader_url\s*=\s*[`"']([^`"']+)[`"']/)) == null ? void 0 : _c[1];
+        if (!videoId || !loaderUrl) return { url };
+        const loaderFull = loaderUrl + videoId;
+        const res2 = yield safeFetch(loaderFull, {
+          headers: { "Referer": origin + "/" },
+          timeout: 12e3
+        });
+        if (!res2) return { url };
+        const manifest = yield res2.text();
+        if (!manifest || !manifest.includes("#EXTM3U")) return { url };
+        return { url: loaderFull, headers: { "Referer": origin + "/" } };
+      } catch (e) {
+      }
+      return { url };
+    });
+  }
+  function resolveMoon(url) {
+    return __async(this, null, function* () {
+      try {
+        const res = yield safeFetch(url);
+        if (!res) return { url };
+        let html = yield res.text();
+        if (html.includes("p,a,c,k,e,d")) html = unpack(html);
+        const match = html.match(/file\s*:\s*["']([^"']+\.(?:mp4|m3u8)[^"']*)["']/);
+        if (match) return { url: match[1], headers: { "Referer": url } };
+      } catch (e) {
+      }
+      return { url };
+    });
+  }
+  function resolvePackedPlayer(url) {
+    return __async(this, null, function* () {
+      var _a;
+      try {
+        const origin = ((_a = url.match(/^https?:\/\/[^/]+/)) == null ? void 0 : _a[0]) || url;
+        const res = yield safeFetch(url, { headers: { "Referer": origin + "/" } });
+        if (!res) return { url };
+        let html = yield res.text();
+        if (html.includes("p,a,c,k,e,d") || html.includes("eval(function")) html = unpack(html);
+        const match = html.match(/file\s*:\s*["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/i) || html.match(/sources\s*:\s*\[[^\]]*?["'](https?:\/\/[^"']+\.(?:m3u8|mp4)[^"']*)["']/i) || html.match(/["'](https?:\/\/[^"']+\.(?:m3u8|mp4)[^"']*)["']/i);
+        if (match) {
+          return { url: match[1], headers: { "Referer": origin + "/" } };
+        }
+      } catch (e) {
+      }
+      return { url };
+    });
+  }
+  function resolveLecteurVideo(url) {
+    return __async(this, null, function* () {
+      var _a, _b;
+      try {
+        const origin = ((_a = url.match(/^https?:\/\/[^/]+/)) == null ? void 0 : _a[0]) || "https://lecteurvideo.com";
+        const refParam = ((_b = url.match(/[?&]url=([^&]+)/)) == null ? void 0 : _b[1]) || "";
+        const referrerMap = {
+          "wookafr.tel": "https://wookafr.center",
+          "wookafr.to": "https://wookafr.center",
+          "wookafr.app": "https://wookafr.center",
+          "wookafr.fyi": "https://wookafr.center"
+        };
+        const referer = referrerMap[refParam] || `https://${refParam}` || origin + "/";
+        const res = yield safeFetch(url, {
+          headers: { "Referer": referer, "Origin": referer.replace(/\/$/, "") },
+          timeout: 12e3
+        });
+        if (!res) return { url };
+        let html = yield res.text();
+        if (html.includes("p,a,c,k,e,d") || html.includes("eval(function")) html = unpack(html);
+        const directMatch = html.match(/file\s*:\s*["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/i) || html.match(/sources\s*:\s*\[["']([^"']+\.(?:m3u8|mp4)[^"']*)["']\]/i) || html.match(/src\s*:\s*["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/i) || html.match(/data-src=["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/i);
+        if (directMatch) {
+          let videoUrl = directMatch[1];
+          if (videoUrl.startsWith("//")) videoUrl = "https:" + videoUrl;
+          if (!isKnownFakeDirectUrl(videoUrl)) {
+            return { url: videoUrl, headers: { "Referer": origin + "/" } };
+          }
+        }
+        const allUrls = [...html.matchAll(/href=["'](https?:\/\/[^"']+)["']/gi)].map((m) => m[1]).concat([...html.matchAll(/["'](https?:\/\/[^"']+)["']/gi)].map((m) => m[1])).filter((u) => !u.includes("lecteurvideo.com") && !u.includes("youtube.com") && !u.includes("googlevideo.com") && !u.includes("fonts.googleapis.com") && !u.includes("jsdelivr.net") && !u.includes("cloudflareinsights.com") && !u.includes("themoviedb.org") && !u.includes("imagizer.imageshack.com") && !u.includes("cloudflare") && !u.includes("plyr."));
+        const DIRECT_VIDEO_RE = /^https?:\/\/[^"']+\.(?:m3u8|mp4|mkv|webm)(?:\?[^"']*)?$/i;
+        const directVideo = allUrls.find((u) => DIRECT_VIDEO_RE.test(u) && !isKnownFakeDirectUrl(u));
+        if (directVideo) return { url: directVideo, headers: { "Referer": origin + "/" } };
+        const directHosts = ["megaup.net", "1fichier.com"];
+        for (const host of directHosts) {
+          const found = allUrls.find((u) => u.includes(host));
+          if (found) return { url: found, headers: { "Referer": origin + "/" } };
+        }
+        const spaHosts = ["sibnet.ru", "sendvid.com", "dood.to", "listeamed.net", "voe.sx", "veev.to", "filemoon.sx"];
+        for (const host of spaHosts) {
+          const found = allUrls.find((u) => u.includes(host));
+          if (found) return { url: found, headers: { "Referer": origin + "/" } };
+        }
+        const iframeMatch = html.match(/<iframe[^>]+src=["'](https?:\/\/[^"']+)["']/i);
+        if (iframeMatch) {
+          const iframeSrc = iframeMatch[1];
+          if (!iframeSrc.includes("lecteurvideo.com") && !iframeSrc.includes("youtube.com")) {
+            return { url: iframeSrc, headers: { "Referer": origin + "/" } };
+          }
+        }
+        const downloadLink = allUrls.find((u) => u.includes("1fichier.com") || u.includes("megaup.net") || u.includes("filemoon") || u.includes("voe.sx") || u.includes("veev.to") || u.includes("listeamed.net"));
+        if (downloadLink) return { url: downloadLink, headers: { "Referer": origin + "/" } };
+      } catch (e) {
+      }
+      return { url };
+    });
+  }
+  function resolveDownParadise(url) {
+    return __async(this, null, function* () {
+      return { url };
+    });
+  }
+  function resolveUp4fun(url) {
+    return __async(this, null, function* () {
+      try {
+        const res = yield safeFetch(url, { headers: { "Referer": "https://up4fun.top/" } });
+        if (!res) return null;
+        const html = yield res.text();
+        const videoMatch = html.match(/["'](https?:\/\/[^"']+\.(?:m3u8|mp4)[^"']*)["']/i) || html.match(/file\s*:\s*["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/i);
+        if (videoMatch) return { url: videoMatch[1], headers: { "Referer": "https://up4fun.top/" } };
+      } catch (e) {
+      }
+      return null;
+    });
+  }
+  function correctDeformedVideoUrl(url) {
+    if (!url || typeof url !== "string") return url;
+    const urlMatch = url.match(/^https?:\/\/([^\/]+)(.*)/);
+    if (!urlMatch) return url;
+    const fullDomainForWhitelist = urlMatch[1].toLowerCase();
+    if (NEVER_CORRECT_DOMAINS.some(
+      (d) => fullDomainForWhitelist === d || fullDomainForWhitelist.endsWith("." + d)
+    )) {
+      return url;
+    }
+    const fullDeformedDomain = urlMatch[1].toLowerCase();
+    const domainParts = fullDeformedDomain.split(".");
+    const deformedBase = domainParts.length >= 2 ? domainParts[domainParts.length - 2] : domainParts[0];
+    const isKnownSubdomain = KNOWN_HOST_NAMES.some(
+      (h) => fullDeformedDomain.endsWith("." + h.domain)
+    );
+    const isSubdomain = domainParts.length > 2;
+    let correctedUrl = url;
+    let domainCorrected = isKnownSubdomain;
+    if (!domainCorrected) {
+      for (const host of KNOWN_HOST_NAMES) {
+        if (deformedBase.includes(host.name)) {
+          const lenDiff = Math.abs(deformedBase.length - host.name.length);
+          if (lenDiff <= 4) {
+            if (isSubdomain) {
+              if (deformedBase === host.name) {
+                continue;
+              }
+              const prefix = domainParts[domainParts.length - 3];
+              if (/^[a-z0-9]{1,6}$/i.test(prefix)) {
+                console.log(`[Resolver] Subdomain skip (CDN prefix "${prefix}"): ${fullDeformedDomain} \u2192 NOT corrected`);
+                continue;
+              }
+            }
+            console.log(`[Resolver] Domain corrected (direct): ${fullDeformedDomain} \u2192 ${host.domain}`);
+            correctedUrl = correctedUrl.replace(fullDeformedDomain, host.domain);
+            domainCorrected = true;
+            break;
+          }
+        }
+      }
+    }
+    if (!domainCorrected && !isSubdomain) {
+      for (const host of KNOWN_HOST_NAMES) {
+        const knownBase = host.name;
+        if (knownBase.length < 5) continue;
+        let matches = 0;
+        let j = 0;
+        for (let i = 0; i < knownBase.length; i++) {
+          const target = knownBase[i];
+          while (j < deformedBase.length && deformedBase[j] !== target) {
+            j++;
+          }
+          if (j < deformedBase.length) {
+            matches++;
+            j++;
+          } else {
+            break;
+          }
+        }
+        const ratio = matches / knownBase.length;
+        if (ratio >= 0.75) {
+          const lenDiff = Math.abs(deformedBase.length - knownBase.length);
+          if (lenDiff <= 4) {
+            console.log(`[Resolver] Domain corrected (fuzzy ${Math.round(ratio * 100)}%): ${fullDeformedDomain} \u2192 ${host.domain}`);
+            correctedUrl = correctedUrl.replace(fullDeformedDomain, host.domain);
+            domainCorrected = true;
+            break;
+          }
+        }
+      }
+    }
+    const PATH_CORRECTIONS = [
+      [/get_viddeo/gi, "get_video"],
+      [/get_videeo/gi, "get_video"],
+      [/getv_video/gi, "get_video"],
+      [/gdet_video/gi, "get_video"],
+      [/gett_video/gi, "get_video"],
+      [/get_vvdo/gi, "get_video"],
+      [/get_vide0/gi, "get_video"]
+    ];
+    const beforePath = correctedUrl;
+    for (const [pattern, replacement] of PATH_CORRECTIONS) {
+      correctedUrl = correctedUrl.replace(pattern, replacement);
+    }
+    if (domainCorrected) {
+      console.log(`[Resolver] Result: ${url.slice(0, 80)} \u2192 ${correctedUrl.slice(0, 80)}`);
+    } else if (correctedUrl !== url) {
+      console.log(`[Resolver] Path corrected: ${url.slice(0, 60)}`);
+    }
+    return correctedUrl;
+  }
+  function getResponseHeader(headers, name) {
+    try {
+      if (!headers) return "";
+      if (typeof headers.get === "function") {
+        return headers.get(name) || headers.get(String(name).toLowerCase()) || "";
+      }
+      const lower = String(name).toLowerCase();
+      const keys = Object.keys(headers);
+      for (let i = 0; i < keys.length; i++) {
+        if (keys[i].toLowerCase() === lower) return String(headers[keys[i]] || "");
+      }
+    } catch (e) {
+    }
+    return "";
+  }
+  function findBestVideoIframe(html, pageUrl) {
+    var _a;
+    const iframeRegex = /<iframe\s+[^>]*src=["']([^"']+)["']/gi;
+    const candidates = [];
+    let match;
+    while ((match = iframeRegex.exec(html)) !== null) {
+      let iframeUrl = match[1];
+      if (iframeUrl.startsWith("//")) iframeUrl = "https:" + iframeUrl;
+      if (iframeUrl.startsWith("/")) {
+        const origin = (_a = pageUrl.match(/^https?:\/\/[^\/]+/)) == null ? void 0 : _a[0];
+        if (origin) iframeUrl = origin + iframeUrl;
+      }
+      if (!iframeUrl.startsWith("http")) continue;
+      if (iframeUrl === pageUrl) continue;
+      const lower = iframeUrl.toLowerCase();
+      const isAd = AD_IFRAME_PATTERNS.some((p) => lower.includes(p));
+      if (isAd) continue;
+      let score = 0;
+      for (const [keyword, pts] of Object.entries(VIDEO_IFRAME_SCORE)) {
+        if (lower.includes(keyword)) score += pts;
+      }
+      candidates.push({ url: iframeUrl, score });
+    }
+    if (candidates.length === 0) return null;
+    candidates.sort((a, b) => b.score - a.score);
+    return candidates[0].url;
+  }
+  function resolveStream(stream, depth = 0) {
+    return __async(this, null, function* () {
+      if (depth > 1) return __spreadProps(__spreadValues({}, stream), { isDirect: false });
+      if (depth === 0) peeledUrls.clear();
+      stream.url = correctDeformedVideoUrl(stream.url);
+      const originalUrl = stream.url;
+      const urlLower = originalUrl.toLowerCase();
+      if (!originalUrl || originalUrl.includes("google-analytics") || originalUrl.includes("doubleclick")) return null;
+      if (isPlayableMediaUrl(originalUrl)) {
+        return __spreadProps(__spreadValues({}, stream), { isDirect: true });
+      }
+      try {
+        let result = null;
+        if (urlLower.includes("sibnet.ru")) result = yield resolveSibnet(originalUrl);
+        else if (urlLower.includes("vidmoly.") || urlLower.includes("voembed.") || urlLower.includes("ansembed.")) result = yield resolveVidmoly(originalUrl);
+        else if (urlLower.includes(".mail.ru")) result = yield resolveMailRu(originalUrl);
+        else if (urlLower.includes("uqload.") || urlLower.includes("oneupload.")) result = yield resolveUqload(originalUrl);
+        else if (urlLower.includes("voe") || urlLower.includes("weneverbeenfree") || urlLower.includes("maryspecialwatch") || urlLower.includes("charlestoughrace") || urlLower.includes("sandratableother") || urlLower.includes("jeremyparticipantanything") || urlLower.includes("teresapoliticallearn")) result = yield resolveVoe(originalUrl);
+        else if (urlLower.includes("streamtape.com") || urlLower.includes("stape")) result = yield resolveStreamtape(originalUrl);
+        else if (urlLower.includes("dood") || urlLower.includes("ds2play") || urlLower.includes("bigwar5") || urlLower.includes("doply")) result = yield resolveDood(originalUrl);
+        else if (urlLower.includes("moonplayer") || urlLower.includes("filemoon")) result = yield resolveMoon(originalUrl);
+        else if (urlLower.includes("younetu.") || urlLower.includes("netu.")) result = yield resolveYounetu(originalUrl);
+        else if (urlLower.includes("vidoza.")) result = yield resolveVidoza(originalUrl);
+        else if (urlLower.includes("xtremestream.")) result = yield resolveXtremeStream(originalUrl);
+        else if (urlLower.includes("sendvid.") || urlLower.includes("daisukianime")) result = yield resolveSendvid(originalUrl);
+        else if (urlLower.includes("myvi.") || urlLower.includes("mytv.")) result = yield resolveMyTV(originalUrl);
+        else if (urlLower.includes("fsvid.") || urlLower.includes("vidzy.")) result = yield resolveFsvidVidzy(originalUrl);
+        else if (urlLower.includes("vidstream.pro") || urlLower.includes("vidcdn.") || urlLower.includes("kakaflix.") || urlLower.includes("vidhsareup.")) result = yield resolvePackedPlayer(originalUrl);
+        else if (urlLower.includes("luluvid.") || urlLower.includes("lulust.") || urlLower.includes("lulustream.") || urlLower.includes("luluvdo.") || // Miroirs/wrappers LuluStream (vérifié en live 2026-10 : le packer
+        // expose un master.m3u8 tnmr.org, mais 403 constaté même avec Referer
+        // (test 2026-10-10, 2 masters) — la résolution aboutit mais le CDN
+        // refuse ; les providers filtrent ces URLs en aval)
+        urlLower.includes("livavid.") || urlLower.includes("lulavid.") || urlLower.includes("livastream.") || urlLower.includes("wishonly.") || urlLower.includes("veev.")) result = yield resolvePackedPlayer(originalUrl);
+        else if (urlLower.includes("lulu.")) result = yield resolveLuluvid(originalUrl);
+        else if (urlLower.includes("lecteurvideo.")) result = yield resolveLecteurVideo(originalUrl);
+        else if (urlLower.includes("hgcloud.") || urlLower.includes("savefiles.")) result = yield resolveHGCloud(originalUrl);
+        else if (urlLower.includes("down-paradise.") || urlLower.includes("ww1.down-paradise.")) result = yield resolveDownParadise(originalUrl);
+        else if (urlLower.includes("up4fun.")) result = yield resolveUp4fun(originalUrl);
+        else if (urlLower.includes("neocine.")) result = yield extractSeekStreaming(originalUrl);
+        if (result && result.url !== originalUrl && !isKnownFakeDirectUrl(result.url)) {
+          const finalUrl = correctDeformedVideoUrl(result.url);
+          if (finalUrl !== result.url) {
+            console.log(`[Resolver] Resolver output corrected: ${result.url.slice(0, 60)} \u2192 ${finalUrl.slice(0, 60)}`);
+          }
+          return __spreadProps(__spreadValues({}, stream), {
+            url: finalUrl,
+            headers: __spreadValues(__spreadValues({}, stream.headers), result.headers || {}),
+            quality: result.quality || stream.quality,
+            isDirect: true,
+            originalUrl
+          });
+        }
+        const knownSlowHost = urlLower.includes("up4fun.") || urlLower.includes("down-paradise.") || urlLower.includes("getvid.club") || urlLower.includes("vidhsareup.");
+        const deadEmbed = result && result.isDead === true;
+        if (!result || result.url === originalUrl) {
+          if (knownSlowHost || deadEmbed) {
+            return __spreadProps(__spreadValues({}, stream), { isDirect: false });
+          }
+          let skipDirectScan = result && result.url === originalUrl && depth === 0;
+          const res = yield safeFetch(originalUrl, { headers: stream.headers });
+          if (res) {
+            let html = yield res.text();
+            if (html.includes("p,a,c,k,e,d")) html = unpack(html);
+            if (!skipDirectScan) {
+              const jsRedirect = html.match(/window\.location\.(?:href|replace)\s*=\s*['"]([^'"]+)['"]/);
+              if (jsRedirect && jsRedirect[1] !== originalUrl) {
+                const res2 = yield safeFetch(jsRedirect[1], { headers: stream.headers });
+                if (res2) {
+                  html = yield res2.text();
+                  if (html.includes("p,a,c,k,e,d")) html = unpack(html);
+                }
+              }
+            }
+            if (/<title>\s*watch/i.test(html) && html.includes("VOE")) {
+              const voeRes = yield resolveVoe(originalUrl);
+              if (voeRes && voeRes.url !== originalUrl && voeRes.url.startsWith("http") && !isKnownFakeDirectUrl(voeRes.url)) {
+                const finalVoeUrl = correctDeformedVideoUrl(voeRes.url);
+                return __spreadProps(__spreadValues({}, stream), {
+                  url: finalVoeUrl,
+                  headers: __spreadValues(__spreadValues({}, stream.headers), voeRes.headers || {}),
+                  quality: voeRes.quality || stream.quality,
+                  isDirect: true,
+                  originalUrl
+                });
+              }
+            }
+            const iframeUrl = findBestVideoIframe(html, originalUrl);
+            if (iframeUrl && !peeledUrls.has(iframeUrl)) {
+              peeledUrls.add(iframeUrl);
+              console.log(`[Resolver] Peeling: Found nested iframe -> ${iframeUrl}`);
+              const peeledResult = yield resolveStream(__spreadProps(__spreadValues({}, stream), { url: iframeUrl }), depth + 1);
+              if (peeledResult && peeledResult.isDirect) return peeledResult;
+              if (depth > 0) {
+                skipDirectScan = false;
+              }
+            }
+            if (!skipDirectScan) {
+              const strictUrl = html.match(/file\s*:\s*["']([^"']+\.(?:m3u8|mp4)[^"']*)["']/i) || html.match(/sources\s*:\s*\[["']([^"']+\.(?:m3u8|mp4)[^"']*)["']\]/i) || html.match(/'hls'\s*:\s*'([^']+)'/) || html.match(/"hls"\s*:\s*"([^"]+)"/) || html.match(/"hls2"\s*:\s*"(https?[^"]*?\.m3u8[^"]*)"/) || html.match(/'hls2'\s*:\s*'([^']*?\.m3u8[^']*)'/);
+              if (strictUrl) {
+                let extractedUrl = strictUrl[1] || strictUrl[0];
+                if (extractedUrl.startsWith("//")) extractedUrl = "https:" + extractedUrl;
+                if (extractedUrl.includes(String.fromCharCode(92))) {
+                  extractedUrl = extractedUrl.split(String.fromCharCode(92) + "/").join("/").split(String.fromCharCode(92) + "u002F").join("/");
+                }
+                const isInvalidExtension = extractedUrl.match(/\.(css|js|html|php|jpg|png|gif|svg)(\?.*)?$/i);
+                if (extractedUrl.startsWith("http") && !extractedUrl.includes(BASE_URL_FORBIDDEN_PATTERN) && !isInvalidExtension && !isKnownFakeDirectUrl(extractedUrl)) {
+                  result = { url: extractedUrl };
+                }
+              }
+            }
+            if (!result && !skipDirectScan) {
+              const looseUrl = html.match(/https?:\/\/[^"']+\.m3u8[^"']*/) || html.match(/https?:\/\/[^"']+\.mp4[^"']*/);
+              if (looseUrl) {
+                let extractedUrl = looseUrl[0];
+                if (extractedUrl.startsWith("//")) extractedUrl = "https:" + extractedUrl;
+                if (extractedUrl.includes(String.fromCharCode(92))) {
+                  extractedUrl = extractedUrl.split(String.fromCharCode(92) + "/").join("/").split(String.fromCharCode(92) + "u002F").join("/");
+                }
+                const isInvalidExtension = extractedUrl.match(/\.(css|js|html|php|jpg|png|gif|svg)(\?.*)?$/i);
+                if (extractedUrl.startsWith("http") && !extractedUrl.includes(BASE_URL_FORBIDDEN_PATTERN) && !isInvalidExtension && !isKnownFakeDirectUrl(extractedUrl)) {
+                  console.log(`[Resolver] Loose URL match (last resort): ${extractedUrl.slice(0, 80)}`);
+                  result = { url: extractedUrl };
+                }
+              }
+            }
+          }
+        }
+        if (result && result.url !== originalUrl && result.url.startsWith("http") && !isKnownFakeDirectUrl(result.url)) {
+          const finalUrl = correctDeformedVideoUrl(result.url);
+          if (finalUrl !== result.url) {
+            console.log(`[Resolver] Generic fallback output corrected: ${result.url.slice(0, 60)} \u2192 ${finalUrl.slice(0, 60)}`);
+          }
+          return __spreadProps(__spreadValues({}, stream), {
+            url: finalUrl,
+            headers: __spreadValues(__spreadValues({}, stream.headers), result.headers || {}),
+            quality: result.quality || stream.quality,
+            isDirect: true,
+            originalUrl
+          });
+        }
+      } catch (err) {
+      }
+      return __spreadProps(__spreadValues({}, stream), { isDirect: false });
+    });
+  }
+  var PROVIDER_BUDGET_MS, MAX_STREAMS_PER_PROVIDER, MAX_SAFE_FETCH_BODY_BYTES, RUNTIME_TRUNCATION_SUFFIX, BUILD_HASH, HAS_NATIVE_CRYPTO, _nodeCrypto, HAS_NATIVE_TIMERS, HEADERS, USER_AGENT, BASE_HEADERS, _atob, CODEC_PREFERENCE, TV_BUDGET_MS, STRICT_QUALITY_TIERS, DEFAULT_QUALITY_TIER, CODEC_PRIORITY, manifestCache, MANIFEST_CACHE_TTL, FETCH_CACHE_TTL, fetchCache, LANGUAGE_CODE_MAP, MAX_MANIFEST_EXPANSIONS, MAX_SIZE_PROBES, DEFAULT_FETCH_TIMEOUT, KNOWN_HOST_NAMES, NEVER_CORRECT_DOMAINS, peeledUrls, AD_IFRAME_PATTERNS, VIDEO_IFRAME_SCORE, BASE_URL_FORBIDDEN_PATTERN;
+  var init_resolvers = __esm({
+    "src/utils/resolvers.js"() {
+      init_seekstream_resolver();
+      PROVIDER_BUDGET_MS = 45e3;
+      MAX_STREAMS_PER_PROVIDER = 80;
+      MAX_SAFE_FETCH_BODY_BYTES = 1024 * 1024;
+      RUNTIME_TRUNCATION_SUFFIX = "\n...[truncated]";
+      BUILD_HASH = true ? "c978c6ce" : "dev";
+      HAS_NATIVE_CRYPTO = typeof crypto !== "undefined" && typeof crypto.subtle !== "undefined" && typeof TextEncoder !== "undefined" && typeof TextDecoder !== "undefined";
+      _nodeCrypto = null;
+      try {
+        _nodeCrypto = __require("crypto");
+      } catch (_) {
+      }
+      HAS_NATIVE_TIMERS = typeof setTimeout === "function";
+      HEADERS = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+      };
+      USER_AGENT = HEADERS["User-Agent"];
+      BASE_HEADERS = __spreadValues({}, HEADERS);
+      _atob = (str) => {
+        try {
+          return atob(str);
+        } catch (e) {
+          return str;
+        }
+      };
+      CODEC_PREFERENCE = ["AV1", "H.265", "H.264", "VP9"];
+      TV_BUDGET_MS = 5e4;
+      STRICT_QUALITY_TIERS = [2160, 1080, 720, 480, 360, 240];
+      DEFAULT_QUALITY_TIER = 720;
+      CODEC_PRIORITY = {
+        "avc1": "H.264",
+        "h264": "H.264",
+        "hev1": "H.265",
+        "hvc1": "H.265",
+        "h265": "H.265",
+        "av01": "AV1",
+        "av1": "AV1",
+        "vp9": "VP9",
+        "vp09": "VP9",
+        "mp4a": "AAC",
+        "ac-3": "AC3",
+        "ec-3": "EAC3",
+        "opus": "Opus"
+      };
+      manifestCache = /* @__PURE__ */ new Map();
+      MANIFEST_CACHE_TTL = 12e4;
+      FETCH_CACHE_TTL = 3e5;
+      fetchCache = /* @__PURE__ */ new Map();
+      LANGUAGE_CODE_MAP = {
+        VF: "fr",
+        VFQ: "fr",
+        VFF: "fr",
+        VFI: "fr",
+        VFK: "fr",
+        FRA: "fr",
+        FR: "fr",
+        FRENCH: "fr",
+        "FRAN\xC7AIS": "fr",
+        VOSTFR: "fr",
+        VOSTF: "fr",
+        VOST: "fr",
+        SUBF: "fr",
+        MULTI: "multi",
+        FAN: "multi",
+        EN: "en",
+        ENG: "en",
+        ENGLISH: "en",
+        VOA: "en",
+        VO: "ja",
+        JA: "ja",
+        JP: "ja",
+        JAP: "ja",
+        JAPANESE: "ja",
+        VOSTA: "ja"
+      };
+      MAX_MANIFEST_EXPANSIONS = 6;
+      MAX_SIZE_PROBES = 3;
+      DEFAULT_FETCH_TIMEOUT = 15e3;
+      KNOWN_HOST_NAMES = [
+        { name: "streamtape", domain: "streamtape.com" },
+        { name: "sibnet", domain: "sibnet.ru" },
+        { name: "vidmoly", domain: "vidmoly.to" },
+        { name: "uqload", domain: "uqload.co" },
+        { name: "voe", domain: "voe.sx" },
+        { name: "dood", domain: "dood.to" },
+        { name: "younetu", domain: "younetu.org" },
+        { name: "netu", domain: "netu.tv" },
+        { name: "vidoza", domain: "vidoza.net" },
+        { name: "sendvid", domain: "sendvid.com" },
+        { name: "myvi", domain: "myvi.ru" },
+        { name: "moon", domain: "filemoon.sx" },
+        { name: "luluvid", domain: "luluvid.com" },
+        { name: "fsvid", domain: "fsvid.lol" },
+        { name: "vidzy", domain: "vidzy.live" },
+        { name: "lecteurvideo", domain: "lecteurvideo.com" },
+        { name: "vidhsareup", domain: "vidhsareup.fun" },
+        { name: "hgcloud", domain: "hgcloud.xyz" },
+        { name: "up4fun", domain: "up4fun.top" },
+        { name: "lulu", domain: "luluvdo.com" }
+      ];
+      NEVER_CORRECT_DOMAINS = [
+        "voembed.net",
+        // famille VidMoly (m3u8 en clair) — PAS voe
+        "vidmoly.biz",
+        // domaine VidMoly vivant servi dans les iframes (live 2026-10)
+        "vidmoly.net",
+        // 301 → vidmoly.biz (live 2026-10) — ne pas réécrire en .to
+        "gn1r5n.org",
+        // embed "myTV" de VoirAnime
+        "streamhide.to"
+        // gate ParkLogic — PAS streamtape
+      ];
+      peeledUrls = /* @__PURE__ */ new Set();
+      AD_IFRAME_PATTERNS = [
+        "googleads",
+        "doubleclick",
+        "googlesyndication",
+        "googletagmanager",
+        "facebook.com/plugins",
+        "twitter.com/share",
+        "disqus.com",
+        "hotjar.com",
+        "analytics",
+        "tracking",
+        "pixel",
+        "gtag",
+        "adservice",
+        "adserver",
+        "ad.doubleclick",
+        "amazon-adsystem",
+        "criteo",
+        "taboola",
+        "outbrain"
+      ];
+      VIDEO_IFRAME_SCORE = {
+        "sibnet": 3,
+        "vidmoly": 3,
+        "uqload": 3,
+        "voe": 3,
+        "dood": 3,
+        "streamtape": 3,
+        "sendvid": 2,
+        "younetu": 2,
+        "netu": 2,
+        "moonplayer": 2,
+        "filemoon": 2,
+        "vidoza": 2,
+        "myvi": 2,
+        "luluvid": 2,
+        "lulu": 2,
+        "embed": 2,
+        "player": 2,
+        "video": 2,
+        "cdn": 1,
+        "hls": 3,
+        "mp4": 3,
+        "m3u8": 3
+      };
+      BASE_URL_FORBIDDEN_PATTERN = "googletagmanager";
+    }
+  });
+
+  // src/aniverse/http.js
+  function isChallenge(text) {
+    if (!text) return false;
+    return text.includes("Just a moment") || text.includes("cf-browser-verification") || text.includes("Attention Required") || text.includes("error code: 1010");
+  }
+  function fetchApi(_0) {
+    return __async(this, arguments, function* (url, options = {}) {
+      const { timeout = 12e3, signal } = options;
+      const headers = __spreadValues(__spreadValues({}, BASE_HEADERS2), options.headers || {});
+      for (let attempt = 0; attempt <= RETRY_DELAYS.length; attempt++) {
+        if (isAborted(signal)) return null;
+        try {
+          const res = yield safeFetch(url, { headers, timeout, signal, redirect: "follow" });
+          if (!res) return null;
+          const status = typeof res.status === "number" ? res.status : 0;
+          if (status === 404 || status === 422) return null;
+          if (status === 429 && attempt < RETRY_DELAYS.length) {
+            yield sleep(RETRY_DELAYS[attempt] * 2);
+            continue;
+          }
+          const text = yield res.text();
+          if (isChallenge(text) && attempt < RETRY_DELAYS.length) {
+            yield sleep(RETRY_DELAYS[attempt]);
+            continue;
+          }
+          if (status < 200 || status >= 300) return null;
+          if (!text || text.length === 0) return null;
+          try {
+            const json = JSON.parse(text);
+            if (json == null) return null;
+            return json;
+          } catch (e) {
+            return null;
+          }
+        } catch (e) {
+          if (isAborted(signal)) return null;
+          if (attempt < RETRY_DELAYS.length) yield sleep(RETRY_DELAYS[attempt]);
+          else return null;
+        }
+      }
+      return null;
+    });
+  }
+  function cdnHeaders(authHeader) {
+    const h = {
+      Referer: `${BASE}/`,
+      "User-Agent": USER_AGENT2
+    };
+    if (authHeader) h.Authorization = authHeader;
+    return h;
+  }
+  var BASE, USER_AGENT2, BASE_HEADERS2, RETRY_DELAYS;
+  var init_http = __esm({
+    "src/aniverse/http.js"() {
+      init_resolvers();
+      BASE = "https://aniverse.fr";
+      USER_AGENT2 = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36";
+      BASE_HEADERS2 = {
+        "User-Agent": USER_AGENT2,
+        Accept: "application/json, text/plain, */*",
+        "Accept-Language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7",
+        Referer: `${BASE}/`,
+        Origin: BASE
+      };
+      RETRY_DELAYS = [800, 2e3];
+    }
+  });
+
+  // src/utils/metadata.js
+  function fetchTmdb(url, attempts = 2, deadline = 0) {
+    return __async(this, null, function* () {
+      for (let i = 0; i < attempts; i++) {
+        if (deadline && Date.now() >= deadline) return null;
+        const remaining = deadline ? deadline - Date.now() : 0;
+        const timeout = Math.min(8e3, Math.max(2e3, remaining));
+        const res = yield safeFetch(url, { timeout });
+        if (res && res.ok) return res;
+        if (i < attempts - 1) yield sleep(400);
+      }
+      return null;
+    });
+  }
+  function metadataCacheGet(key) {
+    const entry = METADATA_CACHE.get(key);
+    if (entry && Date.now() - entry.ts < METADATA_TTL) return entry.data;
+    if (entry) METADATA_CACHE.delete(key);
+    return null;
+  }
+  function metadataCacheSet(key, data) {
+    if (METADATA_CACHE.size >= METADATA_MAX) {
+      const oldest = [...METADATA_CACHE.entries()].sort((a, b) => a[1].ts - b[1].ts).slice(0, 100).map(([k]) => k);
+      for (const k of oldest) METADATA_CACHE.delete(k);
+    }
+    METADATA_CACHE.set(key, { data, ts: Date.now() });
+  }
+  function isLatinText(str) {
+    return /^[\x00-\x7F\u00C0-\u024F\s\-,:!.'?&()0-9]+$/.test(str);
+  }
+  function parseKitsuId(id) {
+    const strId = String(id);
+    return strId.match(/^kitsu:(\d+)(?::(\d+))?$/);
+  }
+  function parseTrackerId(id) {
+    const match = String(id || "").match(/^(mal|anilist|anidb|tvdb):(\d+)(?::(\d+))?$/i);
+    if (!match) return null;
+    return {
+      tracker: match[1].toLowerCase(),
+      externalId: match[2],
+      absEpisode: match[3] ? parseInt(match[3], 10) : null
+    };
+  }
+  function aniListMedia(tracker) {
+    return __async(this, null, function* () {
+      var _a;
+      if (!tracker || tracker.tracker === "anidb" || tracker.tracker === "tvdb") return null;
+      const isAniList = tracker.tracker === "anilist";
+      const query = isAniList ? "query($id: Int){Media(id: $id, type: ANIME){idMal title{romaji english native}}}" : "query($idMal: Int){Media(idMal: $idMal, type: ANIME){idMal title{romaji english native}}}";
+      const variables = isAniList ? { id: Number(tracker.externalId) } : { idMal: Number(tracker.externalId) };
+      if (!Number.isFinite((_a = variables.id) != null ? _a : variables.idMal)) return null;
+      try {
+        const res = yield safeFetch("https://graphql.anilist.co", {
+          method: "POST",
+          headers: {
+            "User-Agent": ANILIST_USER_AGENT,
+            "Content-Type": "application/json",
+            Accept: "application/json"
+          },
+          body: JSON.stringify({ query, variables }),
+          // Timeout court : AniList est derrière Cloudflare, un challenge 403
+          // répond vite — inutile de brûler du budget TV pour un id annexe.
+          timeout: 6e3
+        });
+        if (!res || !res.ok) return null;
+        let data = null;
+        try {
+          data = yield res.json();
+        } catch (e) {
+          return null;
+        }
+        return data && data.data && data.data.Media ? data.data.Media : null;
+      } catch (e) {
+        return null;
+      }
+    });
+  }
+  function trackerTitles(tracker, mediaType, opts) {
+    return __async(this, null, function* () {
+      const media = yield aniListMedia(tracker);
+      if (!media || !media.title) {
+        console.warn(`[Metadata] Tracker ${tracker.tracker}:${tracker.externalId} non r\xE9solu (0 requ\xEAte TMDB d\xE9pens\xE9e)`);
+        return [];
+      }
+      const candidates = [media.title.english, media.title.romaji, media.title.native].map((t) => (t || "").trim()).filter(Boolean);
+      for (const candidate of candidates) {
+        const tmdbId = yield searchTmdbByTitle(candidate, mediaType);
+        if (!tmdbId) continue;
+        const titles = yield getTMDBTitlesById(String(tmdbId), mediaType, opts);
+        if (titles && titles.length > 0) {
+          console.log(`[Metadata] ${tracker.tracker}:${tracker.externalId} \u2192 TMDB ${tmdbId} via "${candidate}"`);
+          return titles;
+        }
+      }
+      console.log(`[Metadata] AniList titles used directly for ${tracker.tracker}:${tracker.externalId}`);
+      return candidates;
+    });
+  }
+  function resolveImdbToTmdb(imdbId, mediaType) {
+    return __async(this, null, function* () {
+      if (!/^tt\d+$/i.test(imdbId)) return null;
+      const url = `${TMDB_API_BASE}/find/${imdbId}?api_key=${TMDB_API_KEY}&external_source=imdb_id`;
+      const res = yield fetchTmdb(url, 1);
+      if (!res) return null;
+      let data = null;
+      try {
+        data = yield res.json();
+      } catch (e) {
+        return null;
+      }
+      const list = (mediaType === "movie" ? data && data.movie_results : data && data.tv_results) || [];
+      const first = list[0];
+      return first && first.id ? String(first.id) : null;
+    });
+  }
+  function searchTmdbByTitle(title, mediaType) {
+    return __async(this, null, function* () {
+      const type = mediaType === "movie" ? "movie" : "tv";
+      const encoded = encodeURIComponent(title);
+      const url = `${TMDB_API_BASE}/search/${type}?api_key=${TMDB_API_KEY}&query=${encoded}`;
+      const res = yield safeFetch(url);
+      if (!res) return null;
+      let data;
+      try {
+        data = yield res.json();
+      } catch (e) {
+        return null;
+      }
+      const results = data == null ? void 0 : data.results;
+      if (!results || !results.length) return null;
+      return results[0].id;
+    });
+  }
+  function getKitsuTitles(_0, _1) {
+    return __async(this, arguments, function* (kitsuId, mediaType, opts = {}) {
+      var _a, _b, _c, _d, _e, _f;
+      const url = `https://kitsu.io/api/edge/anime/${kitsuId}`;
+      const res = yield safeFetch(url);
+      if (!res) {
+        console.log(`[Metadata] Kitsu API error: failed to fetch ${kitsuId}`);
+        return [];
+      }
+      let data;
+      try {
+        data = yield res.json();
+      } catch (e) {
+        console.log(`[Metadata] Kitsu API error: invalid JSON for ${kitsuId}`);
+        return [];
+      }
+      const anime = (_a = data == null ? void 0 : data.data) == null ? void 0 : _a.attributes;
+      if (!anime) {
+        console.log(`[Metadata] Kitsu API error: no anime data for ${kitsuId}`);
+        return [];
+      }
+      const enTitle = (_c = (_b = anime.titles) == null ? void 0 : _b.en) == null ? void 0 : _c.trim();
+      if (enTitle) {
+        const foundTmdbId = yield searchTmdbByTitle(enTitle, mediaType);
+        if (foundTmdbId) {
+          console.log(`[Metadata] Kitsu ${kitsuId} -> TMDB ${foundTmdbId} via "${enTitle}"`);
+          return yield getTMDBTitlesById(String(foundTmdbId), mediaType, opts);
+        }
+      }
+      const titles = [];
+      const canonicalTitle = (_d = anime.canonicalTitle) == null ? void 0 : _d.trim();
+      if (enTitle) titles.push(enTitle);
+      if (canonicalTitle && !titles.some((t) => t.toLowerCase() === canonicalTitle.toLowerCase())) {
+        titles.push(canonicalTitle);
+      }
+      const jaTitle = (_f = (_e = anime.titles) == null ? void 0 : _e.ja_jp) == null ? void 0 : _f.trim();
+      if (jaTitle && !titles.some((t) => t.toLowerCase() === jaTitle.toLowerCase()) && isLatinText(jaTitle)) {
+        titles.push(jaTitle);
+      }
+      const abbrTitles = anime.abbreviatedTitles || [];
+      for (const t of abbrTitles) {
+        const trimmed = t == null ? void 0 : t.trim();
+        if (trimmed && !titles.some((existing) => existing.toLowerCase() === trimmed.toLowerCase()) && isLatinText(trimmed)) {
+          titles.push(trimmed);
+        }
+      }
+      const season = opts.season ? parseInt(opts.season, 10) : null;
+      if (season && season > 0) {
+        const baseTitles = [enTitle, canonicalTitle].filter(Boolean);
+        for (const baseTitle of baseTitles) {
+          for (const suffix of SEASON_SUFFIXES) {
+            const variant = `${baseTitle} ${suffix(season)}`;
+            if (!titles.some((t) => t.toLowerCase() === variant.toLowerCase())) {
+              titles.push(variant);
+            }
+          }
+        }
+      }
+      const dateStr = anime.startDate;
+      const year = dateStr && dateStr.length >= 4 && /^\d{4}/.test(dateStr) ? parseInt(dateStr.substring(0, 4), 10) : null;
+      titles._metadata = {
+        isAnime: (anime.originalLanguage || "") === "ja",
+        name: anime.canonicalTitle || "",
+        originalLanguage: anime.originalLanguage || "",
+        year
+      };
+      console.log(`[Metadata] Kitsu fallback titles for ${kitsuId}: ${titles.join(" | ")}`);
+      return titles;
+    });
+  }
+  function getTMDBTitlesById(_0, _1) {
+    return __async(this, arguments, function* (tmdbId, mediaType, opts = {}) {
+      var _a, _b, _c, _d, _e, _f;
+      const type = mediaType === "movie" ? "movie" : "tv";
+      const season = opts.season ? parseInt(opts.season, 10) : null;
+      const cacheKey = `tmdb:${tmdbId}:${type}:${season || ""}`;
+      const cached = metadataCacheGet(cacheKey);
+      if (cached) {
+        console.log(`[Metadata] Cache HIT for ${cacheKey}`);
+        return cached;
+      }
+      const titles = [];
+      let metadata = null;
+      try {
+        const mainUrl = `${TMDB_API_BASE}/${type}/${tmdbId}?api_key=${TMDB_API_KEY}&language=en-US`;
+        const altUrl = `${TMDB_API_BASE}/${type}/${tmdbId}/alternative_titles?api_key=${TMDB_API_KEY}`;
+        const transUrl = `${TMDB_API_BASE}/${type}/${tmdbId}/translations?api_key=${TMDB_API_KEY}`;
+        const deadline = Date.now() + METADATA_BUDGET_MS;
+        const mainRes = yield fetchTmdb(mainUrl, 2, deadline);
+        const remaining = () => deadline - Date.now();
+        const enrichAllowed = opts.allowEnrichment !== false;
+        let altRes = null;
+        let transRes = null;
+        if (enrichAllowed && remaining() > METADATA_ALT_MIN_MS) {
+          [altRes, transRes] = yield Promise.all([
+            fetchTmdb(altUrl, 1, deadline),
+            fetchTmdb(transUrl, 1, deadline)
+          ]);
+        } else if (enrichAllowed && remaining() > METADATA_TRANS_MIN_MS) {
+          transRes = yield fetchTmdb(transUrl, 1, deadline);
+        }
+        if (mainRes) {
+          const mainJson = yield mainRes.json();
+          const data = mainJson != null ? mainJson : {};
+          const titleEn = (_a = type === "movie" ? data.title : data.name) == null ? void 0 : _a.trim();
+          const titleOriginal = (_b = type === "movie" ? data.original_title : data.original_name) == null ? void 0 : _b.trim();
+          if (data) {
+            const dateStr = type === "movie" ? data.release_date : data.first_air_date;
+            const year = dateStr && dateStr.length >= 4 && /^\d{4}/.test(dateStr) ? parseInt(dateStr.substring(0, 4), 10) : null;
+            metadata = {
+              isAnime: data.original_language === "ja" || (data.genres || []).some((g) => g.id === 16),
+              name: data.name || data.title || "",
+              originalLanguage: data.original_language || "",
+              year
+            };
+            if (type === "tv" && Array.isArray(data.seasons)) {
+              const counts = {};
+              for (const s of data.seasons) {
+                if (s && s.season_number > 0 && s.episode_count > 0) {
+                  counts[s.season_number] = s.episode_count;
+                }
+              }
+              if (Object.keys(counts).length > 0) {
+                metadata.seasonEpisodeCounts = counts;
+              }
+            }
+          }
+          if (titleEn) titles.push(titleEn);
+          if (titleOriginal && titleOriginal !== titleEn && isLatinText(titleOriginal)) {
+            titles.push(titleOriginal);
+          }
+          if (mediaType === "tv" && opts.season) {
+            const s = parseInt(opts.season, 10);
+            if (s > 0 && titleEn) {
+              for (const suffix of SEASON_SUFFIXES) {
+                const variant = `${titleEn} ${suffix(s)}`;
+                if (!titles.includes(variant)) titles.push(variant);
+              }
+            }
+            if (s > 0 && titleOriginal && titleOriginal !== titleEn && isLatinText(titleOriginal)) {
+              for (const suffix of SEASON_SUFFIXES) {
+                const variant = `${titleOriginal} ${suffix(s)}`;
+                if (!titles.includes(variant)) titles.push(variant);
+              }
+            }
+          }
+        }
+        if (altRes) {
+          const altJson = yield altRes.json();
+          const altData = altJson != null ? altJson : {};
+          const altList = type === "movie" ? altData.titles : altData.results;
+          if (altList && Array.isArray(altList)) {
+            altList.forEach((alt) => {
+              var _a2;
+              const t = (_a2 = alt.title) == null ? void 0 : _a2.trim();
+              if (t && !titles.some((existing) => existing.toLowerCase() === t.toLowerCase()) && isLatinText(t)) {
+                titles.push(t);
+              }
+            });
+          }
+        }
+        if (transRes) {
+          const transJson = yield transRes.json();
+          const transData = transJson != null ? transJson : {};
+          const frTrans = (transData.translations || []).find((t) => t.iso_639_1 === "fr");
+          const titleFr = ((_d = (_c = frTrans == null ? void 0 : frTrans.data) == null ? void 0 : _c.name) == null ? void 0 : _d.trim()) || ((_f = (_e = frTrans == null ? void 0 : frTrans.data) == null ? void 0 : _e.title) == null ? void 0 : _f.trim());
+          if (titleFr && !titles.some((existing) => existing.toLowerCase() === titleFr.toLowerCase())) {
+            titles.splice(1, 0, titleFr);
+          }
+          if (mediaType === "tv" && opts.season && titleFr) {
+            const s = parseInt(opts.season, 10);
+            if (s > 0) {
+              const frVar = `${titleFr} Saison ${s}`;
+              if (!titles.some((existing) => existing.toLowerCase() === frVar.toLowerCase())) {
+                const frIndex = titles.indexOf(titleFr);
+                if (frIndex !== -1) {
+                  titles.splice(frIndex + 1, 0, frVar);
+                } else {
+                  titles.splice(2, 0, frVar);
+                }
+              }
+            }
+          }
+        }
+      } catch (e) {
+        console.error(`[Metadata] TMDB API error: ${e.message}`);
+      }
+      const seen = /* @__PURE__ */ new Set();
+      const uniqueTitles = titles.filter((t) => {
+        const key = t.toLowerCase();
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+      if (metadata) {
+        uniqueTitles._metadata = metadata;
+      }
+      if (uniqueTitles.length > 0 || metadata) {
+        metadataCacheSet(cacheKey, uniqueTitles);
+      }
+      console.log(`[Metadata] Titles for ${tmdbId}: ${uniqueTitles.join(" | ")}`);
+      return uniqueTitles;
+    });
+  }
+  function kitsuSearchFallback(tmdbName, mediaType, opts) {
+    return __async(this, null, function* () {
+      var _a, _b, _c, _d, _e, _f;
+      try {
+        if (!tmdbName || tmdbName.length < 3) return [];
+        const season = opts.season ? parseInt(opts.season, 10) : null;
+        const cacheKey = `kitsu-fb:${tmdbName.toLowerCase()}:${mediaType}:${season || ""}`;
+        const cached = metadataCacheGet(cacheKey);
+        if (cached) {
+          console.log(`[Metadata] Kitsu fallback cache HIT for "${tmdbName}"`);
+          return cached;
+        }
+        const url = `https://kitsu.io/api/edge/anime?filter[text]=${encodeURIComponent(tmdbName)}&page[limit]=5`;
+        const res = yield safeFetch(url);
+        if (!res) return [];
+        const data = yield res.json();
+        if (!((_a = data == null ? void 0 : data.data) == null ? void 0 : _a.length)) return [];
+        for (const anime of data.data) {
+          const attrs = anime.attributes || {};
+          const jaTitle = (_c = (_b = attrs.titles) == null ? void 0 : _b.ja_jp) == null ? void 0 : _c.trim();
+          const canonicalTitle = (_d = attrs.canonicalTitle) == null ? void 0 : _d.trim();
+          const enTitle = ((_f = (_e = attrs.titles) == null ? void 0 : _e.en) == null ? void 0 : _f.trim()) || canonicalTitle;
+          if (!jaTitle && attrs.originalLanguage !== "ja") continue;
+          if (!enTitle) continue;
+          console.log(`[Metadata] Kitsu search: "${tmdbName}" \u2192 "${enTitle}" (ja=${!!jaTitle})`);
+          const foundTmdbId = yield searchTmdbByTitle(enTitle, mediaType);
+          if (foundTmdbId) {
+            const altTitles = yield getTMDBTitlesById(String(foundTmdbId), mediaType, opts);
+            const meta = altTitles._metadata;
+            if (meta && meta.isAnime) {
+              console.log(`[Metadata] Fallback success: TMDB ID ${foundTmdbId} for "${enTitle}"`);
+              metadataCacheSet(cacheKey, altTitles);
+              return altTitles;
+            }
+          }
+          console.log(`[Metadata] Fallback: using Kitsu titles directly for ${anime.id}`);
+          const kitsuTitles = yield getKitsuTitles(anime.id, mediaType, opts);
+          metadataCacheSet(cacheKey, kitsuTitles);
+          return kitsuTitles;
+        }
+        console.log(`[Metadata] Kitsu search: no valid results for "${tmdbName}"`);
+        return [];
+      } catch (e) {
+        console.warn(`[Metadata] Kitsu fallback error: ${e.message}`);
+        return [];
+      }
+    });
+  }
+  function getTmdbTitles(_0, _1) {
+    return __async(this, arguments, function* (id, mediaType, opts = {}) {
+      const strId = (id == null ? "" : String(id).trim()).replace(/^tmdb[:/]/i, "").replace(/^(?:movie|series)[:/]/i, "");
+      const kitsuMatch = parseKitsuId(strId);
+      let effectiveSeason = opts.season != null ? opts.season : null;
+      console.log(`[Metadata] getTmdbTitles: id="${strId}" type="${mediaType}" season=${opts.season}`);
+      if (kitsuMatch) {
+        const kitsuId = kitsuMatch[1];
+        const seasonFromId = kitsuMatch[2] ? parseInt(kitsuMatch[2], 10) : null;
+        effectiveSeason = opts.season != null ? opts.season : seasonFromId;
+        console.log(`[Metadata] Kitsu ID detected: ${kitsuId}, season=${effectiveSeason}`);
+        const titles2 = yield getKitsuTitles(kitsuId, mediaType, __spreadProps(__spreadValues({}, opts), { season: effectiveSeason }));
+        titles2.effectiveSeason = effectiveSeason;
+        return titles2;
+      }
+      if (!strId) {
+        console.error(`[Metadata] Invalid/null TMDB ID received: "${id}"`);
+        const emptyTitles = [];
+        emptyTitles.effectiveSeason = effectiveSeason;
+        return emptyTitles;
+      }
+      const tracker = parseTrackerId(strId);
+      if (tracker) {
+        if (opts.season == null && tracker.absEpisode != null) {
+          effectiveSeason = tracker.absEpisode;
+        }
+        const titles2 = yield trackerTitles(tracker, mediaType, __spreadProps(__spreadValues({}, opts), { season: effectiveSeason }));
+        titles2.effectiveSeason = effectiveSeason;
+        return titles2;
+      }
+      let contentId = strId;
+      if (!/^\d+$/.test(strId)) {
+        const imdbId = /^tt\d+$/i.test(strId) ? strId : /^imdb:/i.test(strId) ? strId.slice(5) : null;
+        const resolved = imdbId ? yield resolveImdbToTmdb(imdbId, mediaType) : null;
+        if (!resolved) {
+          console.warn(`[Metadata] ID non-TMDB non r\xE9solu: "${strId}" \u2192 aucun titre (\xE9chec rapide, 0 requ\xEAte TMDB)`);
+          const emptyTitles = [];
+          emptyTitles.effectiveSeason = effectiveSeason;
+          return emptyTitles;
+        }
+        console.log(`[Metadata] ID ${strId} \u2192 TMDB ${resolved}`);
+        contentId = resolved;
+      }
+      const titles = yield getTMDBTitlesById(contentId, mediaType, opts);
+      if (mediaType === "tv" && titles.length > 0 && titles._metadata) {
+        const meta = titles._metadata;
+        if (!meta.isAnime) {
+          console.warn(`[Metadata] \u26A0 ID ${contentId} = "${meta.name}" (${meta.originalLanguage}) - not anime!`);
+          const hasJapaneseName = /[\u3000-\u9FFF\uF900-\uFAFF]/.test(meta.name || "");
+          const hasJapaneseLang = meta.originalLanguage === "ja";
+          if (hasJapaneseLang || hasJapaneseName) {
+            const altTitles = yield kitsuSearchFallback(titles[0], mediaType, opts);
+            if (altTitles.length > 0) {
+              console.log(`[Metadata] Fallback success: ${altTitles.length} alternative titles`);
+              altTitles.effectiveSeason = effectiveSeason;
+              return altTitles;
+            }
+            console.warn(`[Metadata] Kitsu fallback failed for "${meta.name}", using original titles`);
+          } else {
+            console.log(`[Metadata] No anime indicators, skipping Kitsu fallback for "${meta.name}"`);
+          }
+        } else {
+          console.log(`[Metadata] \u2713 ID ${contentId}: "${meta.name}" confirmed anime (${meta.originalLanguage})`);
+        }
+      }
+      titles.effectiveSeason = effectiveSeason;
+      return titles;
+    });
+  }
+  var TMDB_API_KEY, TMDB_API_BASE, METADATA_BUDGET_MS, METADATA_TRANS_MIN_MS, METADATA_ALT_MIN_MS, ANILIST_USER_AGENT, METADATA_CACHE, METADATA_TTL, METADATA_MAX, SEASON_SUFFIXES;
+  var init_metadata = __esm({
+    "src/utils/metadata.js"() {
+      init_resolvers();
+      TMDB_API_KEY = "8265bd1679663a7ea12ac168da84d2e8";
+      TMDB_API_BASE = "https://api.themoviedb.org/3";
+      METADATA_BUDGET_MS = 2e4;
+      METADATA_TRANS_MIN_MS = 4e3;
+      METADATA_ALT_MIN_MS = 8e3;
+      ANILIST_USER_AGENT = "Nuvio-Providers/1.0";
+      METADATA_CACHE = /* @__PURE__ */ new Map();
+      METADATA_TTL = 5 * 60 * 1e3;
+      METADATA_MAX = 500;
+      SEASON_SUFFIXES = [
+        (s) => `Season ${s}`,
+        (s) => `Saison ${s}`,
+        (s) => `S${s}`
+      ];
+    }
+  });
+
+  // src/utils/cache.js
+  function cleanCache(tag) {
+    const now = Date.now();
+    const expired = [];
+    for (const [key, entry] of cache) {
+      if (now - entry.ts >= entry.ttl) {
+        expired.push(key);
+      }
+    }
+    for (const key of expired) {
+      cache.delete(key);
+    }
+    if (cache.size > DEFAULT_MAX_SIZE) {
+      const sorted = [...cache.entries()].sort((a, b) => a[1].ts - b[1].ts);
+      const toRemove = sorted.slice(0, cache.size - DEFAULT_MAX_SIZE);
+      for (const [key] of toRemove) {
+        cache.delete(key);
+      }
+    }
+    if (expired.length > 0) {
+      console.log(`[${tag}] Cache: ${expired.length} expir\xE9es supprim\xE9es, ${cache.size} entr\xE9es restantes`);
+    }
+    lastCleanup = now;
+  }
+  function createCache(namespace, tag, opts = {}) {
+    const logTag = tag || namespace.toUpperCase();
+    const prefix = `${namespace}_`;
+    const successTtl = opts.successTtl || DEFAULT_SUCCESS_TTL;
+    const failureTtl = opts.failureTtl || DEFAULT_FAILURE_TTL;
+    const maxSize = opts.maxSize || DEFAULT_MAX_SIZE;
+    function cacheKey(raw) {
+      return `${prefix}${String(raw).replace(/[^a-zA-Z0-9]/g, "_").replace(/_+/g, "_").replace(/^_|_$/g, "")}`;
+    }
+    function cacheGet(key) {
+      const entry = cache.get(key);
+      if (!entry) return void 0;
+      const now = Date.now();
+      if (now - entry.ts >= entry.ttl) {
+        cache.delete(key);
+        return void 0;
+      }
+      return entry.data;
+    }
+    function cacheSet(key, data, success = true) {
+      if (Date.now() - lastCleanup > CLEANUP_INTERVAL) {
+        cleanCache(logTag);
+      }
+      if (cache.size >= maxSize) {
+        const toRemove = Math.ceil(maxSize * 0.2);
+        const sorted = [...cache.entries()].sort((a, b) => a[1].ts - b[1].ts).slice(0, toRemove);
+        for (const [k] of sorted) cache.delete(k);
+      }
+      cache.set(key, {
+        data,
+        ts: Date.now(),
+        ttl: success ? successTtl : failureTtl,
+        success
+      });
+    }
+    return function withCache2(_0, _1) {
+      return __async(this, arguments, function* (rawKey, fn, opts2 = {}) {
+        const key = cacheKey(rawKey);
+        if (!opts2.bypass) {
+          const cached = cacheGet(key);
+          if (cached !== void 0) {
+            console.log(`[${logTag}] Cache HIT: ${rawKey.slice(0, 60)}`);
+            return cached;
+          }
+        }
+        console.log(`[${logTag}] Cache MISS: ${rawKey.slice(0, 60)}`);
+        try {
+          const result = yield fn();
+          const isSuccess = result != null;
+          cacheSet(key, result, isSuccess);
+          if (!isSuccess) {
+            console.log(`[${logTag}] Cache: negative result cached (30s TTL)`);
+          }
+          return result;
+        } catch (error) {
+          console.warn(`[${logTag}] Cache: error, not caching: ${error == null ? void 0 : error.message}`);
+          throw error;
+        }
+      });
+    };
+  }
+  var DEFAULT_SUCCESS_TTL, DEFAULT_FAILURE_TTL, DEFAULT_MAX_SIZE, CLEANUP_INTERVAL, cache, lastCleanup;
+  var init_cache = __esm({
+    "src/utils/cache.js"() {
+      DEFAULT_SUCCESS_TTL = 3e5;
+      DEFAULT_FAILURE_TTL = 3e4;
+      DEFAULT_MAX_SIZE = 150;
+      CLEANUP_INTERVAL = 6e4;
+      cache = /* @__PURE__ */ new Map();
+      lastCleanup = Date.now();
+    }
+  });
+
+  // src/aniverse/extractor.js
+  function normalizeText(str) {
+    return String(str || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[''`’]/g, "'").replace(/[–—]/g, " ").replace(/[^a-z0-9]+/g, " ").trim();
+  }
+  function scoreCandidate(item, queryNorm) {
+    const candidates = [
+      normalizeText(item.title),
+      normalizeText(item.titleEnglish),
+      normalizeText(item.titleRomaji)
+    ].filter(Boolean);
+    let best = 0;
+    for (const n of candidates) {
+      if (!n) continue;
+      if (n === queryNorm) return 120;
+      if (n.startsWith(queryNorm + " ") || queryNorm.startsWith(n + " ")) best = Math.max(best, 95);
+      else if (n.includes(queryNorm) || queryNorm.includes(n)) best = Math.max(best, 75);
+      const qWords = queryNorm.split(/\s+/).filter((w) => w.length > 2);
+      const nWords = new Set(n.split(/\s+/));
+      const matched = qWords.filter((w) => nWords.has(w)).length;
+      if (qWords.length >= 2 && matched >= 2) {
+        best = Math.max(best, Math.round(matched / qWords.length * 60));
+      }
+    }
+    return best;
+  }
+  function searchCacheKey(titles) {
+    const seen = [];
+    for (const t of (titles || []).filter(Boolean)) {
+      const n = normalizeText(t);
+      if (n && !seen.includes(n)) seen.push(n);
+      if (seen.length >= 3) break;
+    }
+    return seen.join("|||");
+  }
+  function searchCandidates(titles, signal) {
+    return __async(this, null, function* () {
+      const queries = [];
+      for (const t of (titles || []).filter(Boolean)) {
+        const n = normalizeText(t);
+        if (n && !queries.includes(n)) queries.push(n);
+        if (queries.length >= 3) break;
+      }
+      const key = searchCacheKey(titles);
+      const fetchRaw = () => __async(null, null, function* () {
+        const seen = /* @__PURE__ */ new Map();
+        for (const q of queries) {
+          if (isAborted(signal)) break;
+          const data = yield fetchApi(`${API_BASE}/anime/search?q=${encodeURIComponent(q)}`, { signal });
+          const results = data && Array.isArray(data.data) ? data.data : Array.isArray(data) ? data : null;
+          if (!results) continue;
+          for (const item of results) {
+            if (!item || !item.id) continue;
+            const s = scoreCandidate(item, q);
+            const prev = seen.get(item.id);
+            if (!prev || s > prev.score) seen.set(item.id, { item, score: s });
+          }
+          const bestSeen = [...seen.values()].sort((a, b) => b.score - a.score)[0];
+          if (bestSeen && bestSeen.score >= 120) break;
+        }
+        return [...seen.values()].sort((a, b) => b.score - a.score);
+      });
+      if (withCache) {
+        const cached = yield withCache(`search_${key}`, () => __async(null, null, function* () {
+          const r2 = yield fetchRaw();
+          return r2 && r2.length > 0 ? r2 : null;
+        }), { bypass: false });
+        if (cached && Array.isArray(cached)) return cached;
+        return fetchRaw();
+      }
+      const memKey = `raw_${key}`;
+      const mem = _cacheBypassFallback.get(memKey);
+      if (mem && Date.now() - mem.ts < EPISODES_CACHE_TTL) return mem.list;
+      const r = yield fetchRaw();
+      if (r && r.length > 0) _cacheBypassFallback.set(memKey, { list: r, ts: Date.now() });
+      return r;
+    });
+  }
+  function getEpisodeWindow(animeId, fromEp, count, signal) {
+    return __async(this, null, function* () {
+      const from = Math.max(1, parseInt(fromEp, 10) || 1);
+      const cnt = Math.max(1, parseInt(count, 10) || 1);
+      const key = `${animeId}:${from}:${cnt}`;
+      const cached = _episodesCache.get(key);
+      if (cached && Date.now() - cached.ts < EPISODES_CACHE_TTL) return cached.list;
+      const list = yield fetchApi(
+        `${API_BASE}/anime/episode/episodes?animeId=${encodeURIComponent(animeId)}&episodeNumber=${from}&limit=${cnt}`,
+        { signal }
+      );
+      const valid = Array.isArray(list) && list.length > 0 ? list : null;
+      if (valid) _episodesCache.set(key, { list: valid, ts: Date.now() });
+      return valid;
+    });
+  }
+  function validateEpisode(entry, episodeList, episode) {
+    const total = parseInt(entry.totalEpisodes, 10) || 0;
+    if (episodeList && episodeList.length > 0) {
+      const ep = episodeList.find((e) => parseInt(e.episodeNumber, 10) === episode);
+      if (ep) return { ok: true, episodeTitle: ep.titleFr || ep.episodeTitle || null };
+      return { ok: false };
+    }
+    if (total > 0 && episode > total + 2) return { ok: false };
+    return { ok: true, episodeTitle: null };
+  }
+  function fetchTmdbSeasonEpisodes(tmdbId, season, signal) {
+    return __async(this, null, function* () {
+      const base = `${TMDB_BASE}/tv/${tmdbId}/season/${season}`;
+      let eps = null;
+      const fr = yield fetchApi(`${base}?api_key=${TMDB_API_KEY2}&language=fr-FR`, { signal, timeout: 1e4 });
+      if (fr && Array.isArray(fr.episodes) && fr.episodes.length > 0) eps = fr.episodes;
+      if (!eps) {
+        const en = yield fetchApi(`${base}?api_key=${TMDB_API_KEY2}&language=en-US`, { signal, timeout: 1e4 });
+        if (en && Array.isArray(en.episodes) && en.episodes.length > 0) eps = en.episodes;
+      }
+      if (!eps) return null;
+      return eps.map((e) => ({ number: parseInt(e.episode_number, 10), name: String(e.name || "").trim() })).filter((e) => e.number > 0 && e.name);
+    });
+  }
+  function levenshteinSimilarity(a, b) {
+    if (a === b) return 1;
+    const m = a.length, n = b.length;
+    if (!m || !n) return 0;
+    let prev = new Array(n + 1);
+    let curr = new Array(n + 1);
+    for (let j = 0; j <= n; j++) prev[j] = j;
+    for (let i = 1; i <= m; i++) {
+      curr[0] = i;
+      for (let j = 1; j <= n; j++) {
+        const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+        curr[j] = Math.min(prev[j] + 1, curr[j - 1] + 1, prev[j - 1] + cost);
+      }
+      const tmp = prev;
+      prev = curr;
+      curr = tmp;
+    }
+    return 1 - prev[n] / Math.max(m, n);
+  }
+  function extractPartNum(norm) {
+    const m = norm.match(/parti[ei]?\s*(\d+)/) || norm.match(/\bpart\s*(\d+)/);
+    return m ? parseInt(m[1], 10) : null;
+  }
+  function stripPartSuffix(norm) {
+    return norm.replace(/parti[ei]?\s*\d+|\bpart\s*\d+/g, " ").replace(/\s+/g, " ").trim();
+  }
+  function episodeTitleScore(tmdbName, aniverseTitle) {
+    const ntRaw = normalizeText(tmdbName);
+    if (!ntRaw || !aniverseTitle) return 0;
+    const ntPart = extractPartNum(ntRaw);
+    const nt = stripPartSuffix(ntRaw);
+    if (!nt) return 0;
+    let best = 0;
+    const segments = String(aniverseTitle).split(/\s*\/\s*/);
+    for (const seg of segments) {
+      const nsRaw = normalizeText(seg);
+      if (!nsRaw) continue;
+      const nsPart = extractPartNum(nsRaw);
+      if (ntPart != null && nsPart != null && ntPart !== nsPart) continue;
+      const ns = stripPartSuffix(nsRaw);
+      if (!ns) continue;
+      if (ns === nt || nsRaw === ntRaw) {
+        best = Math.max(best, 120);
+        continue;
+      }
+      if (ns.includes(nt) || nt.includes(ns)) {
+        best = Math.max(best, 95);
+        continue;
+      }
+      const a = new Set(nt.split(" ").filter((w) => w.length > 2));
+      const b = new Set(ns.split(" ").filter((w) => w.length > 2));
+      if (a.size && b.size) {
+        const inter = [...a].filter((w) => b.has(w)).length;
+        const uni = (/* @__PURE__ */ new Set([...a, ...b])).size;
+        const jac = uni ? inter / uni : 0;
+        if (jac >= 0.8) {
+          best = Math.max(best, 90);
+          continue;
+        }
+        if (jac >= 0.6) {
+          best = Math.max(best, 80);
+          continue;
+        }
+      }
+      let lcp = 0;
+      const maxLcp = Math.min(nt.length, ns.length);
+      while (lcp < maxLcp && nt[lcp] === ns[lcp]) lcp++;
+      if (lcp >= 12) {
+        best = Math.max(best, 88);
+        continue;
+      }
+      const lev = levenshteinSimilarity(nt, ns);
+      if (lev >= 0.55) {
+        best = Math.max(best, 85);
+        continue;
+      }
+    }
+    return best;
+  }
+  function typeAffinity(item, preferSpecial) {
+    const t = String(item.type || "");
+    if (preferSpecial) return /special|ova|ona/i.test(t) ? 1 : 0;
+    return /tv/i.test(t) ? 1 : 0;
+  }
+  function findBestTitleMatch(_0, _1, _2, _3, _4, _5) {
+    return __async(this, arguments, function* (candidates, tmdbName, preferSpecial, minScore, signal, startTime, opts = {}) {
+      const windowCenter = opts.windowCenter != null ? opts.windowCenter : null;
+      const windowSpan = opts.windowSpan || 0;
+      let best = null;
+      const scanList = candidates.filter((c) => !/movie/i.test(String(c.item.type || ""))).slice(0, 8);
+      for (const cand of scanList) {
+        if (isBudgetExhausted(startTime, BUDGET_MS) || isAborted(signal)) break;
+        const fromEp = windowCenter != null ? Math.max(1, windowCenter - windowSpan) : 1;
+        const count = windowCenter != null ? windowSpan * 2 + 2 : 150;
+        let list = null;
+        try {
+          list = yield getEpisodeWindow(cand.item.id, fromEp, count, signal);
+        } catch (e) {
+          if (isAborted(signal)) throw e;
+          continue;
+        }
+        if (!list) continue;
+        for (const epItem of list) {
+          const num = parseInt(epItem.episodeNumber, 10);
+          if (windowCenter != null && Math.abs(num - windowCenter) > windowSpan) continue;
+          const title = epItem.titleFr || epItem.episodeTitle || "";
+          if (!title) continue;
+          const sc = episodeTitleScore(tmdbName, title);
+          if (sc < minScore) continue;
+          const aff = typeAffinity(cand.item, preferSpecial);
+          if (!best || sc > best.score || sc === best.score && aff > best.typeAff) {
+            best = {
+              item: cand.item,
+              epNumber: parseInt(epItem.episodeNumber, 10),
+              epTitle: title,
+              score: sc,
+              typeAff: aff
+            };
+          }
+        }
+      }
+      return best;
+    });
+  }
+  function resolveStreamByLang(animeId, episode, lang, signal) {
+    return __async(this, null, function* () {
+      const data = yield fetchApi(
+        `${API_BASE}/anime/stream/${encodeURIComponent(animeId)}/${episode}/${lang}`,
+        { signal, timeout: 15e3 }
+      );
+      if (!data || typeof data.source !== "string" || !data.source || !data.source.includes("/")) return null;
+      const auth = data.headers && typeof data.headers.Authorization === "string" ? data.headers.Authorization : null;
+      if (!auth) {
+        console.log(`[${PROVIDER}] Stream sans Authorization (CDN 401 garanti) \u2014 rejet\xE9`);
+        return null;
+      }
+      return {
+        source: data.source,
+        authHeader: auth,
+        tracks: Array.isArray(data.tracks) ? data.tracks : []
+      };
+    });
+  }
+  function resolveEntryStreams(_0, _1, _2) {
+    return __async(this, arguments, function* (item, epNumber, { epLabel, episodeTitle, signal }) {
+      const [subRes, dubRes] = yield Promise.allSettled([
+        resolveStreamByLang(item.id, epNumber, "sub", signal),
+        resolveStreamByLang(item.id, epNumber, "dub", signal)
+      ]);
+      const sub = subRes.status === "fulfilled" ? subRes.value : null;
+      const dub = dubRes.status === "fulfilled" ? dubRes.value : null;
+      if (!sub && !dub) {
+        console.log(`[${PROVIDER}] Ni VOSTFR ni VF dispo sur "${item.slug}" ep ${epNumber}`);
+        return [];
+      }
+      const buildStream = (res, langLabel, langCode) => ({
+        name: `${PROVIDER} (${langLabel})`,
+        title: [
+          `${PROVIDER} [${langLabel}]`,
+          epLabel,
+          item.title,
+          episodeTitle ? `\u2014 ${episodeTitle}` : null
+        ].filter(Boolean).join(" "),
+        url: res.source,
+        quality: "HLS",
+        language: langCode,
+        // Authorization Bearer OBLIGATOIRE : sans lui manifest/clé/segments = 401
+        headers: cdnHeaders(res.authHeader),
+        type: "hls"
+      });
+      const streams = [];
+      if (sub) {
+        const vtt = sub.tracks.find((t) => t && t.file && /captions|subtitles/i.test(t.kind || ""));
+        const stream = buildStream(sub, "VOSTFR", "ja");
+        if (vtt && vtt.file) {
+          stream.subtitles = [{
+            url: vtt.file,
+            language: "fr",
+            name: "Fran\xE7ais",
+            headers: cdnHeaders(sub.authHeader)
+          }];
+        }
+        streams.push(stream);
+        console.log(`[${PROVIDER}] VOSTFR OK: ${sub.source.slice(0, 70)}...`);
+      }
+      if (dub) {
+        streams.push(buildStream(dub, "VF", "fr"));
+        console.log(`[${PROVIDER}] VF OK: ${dub.source.slice(0, 70)}...`);
+      }
+      return streams;
+    });
+  }
+  function extractStreams(_0, _1, _2, _3) {
+    return __async(this, arguments, function* (tmdbId, mediaType, season, episode, options = {}) {
+      const signal = (options == null ? void 0 : options.signal) || null;
+      if (isAborted(signal)) return [];
+      const startTime = Date.now();
+      const isMovie = mediaType === "movie";
+      const parsedSeason = parseInt(season, 10);
+      const s = isNaN(parsedSeason) || parsedSeason < 0 ? 1 : parsedSeason;
+      const ep = parseInt(episode, 10) || 1;
+      const isSpecials = !isMovie && s === 0;
+      const epLabel = isMovie ? "" : `S${s}E${ep}`;
+      const titles = yield getTmdbTitles(tmdbId, isMovie ? "movie" : "tv", { season });
+      if (!titles || titles.length === 0) {
+        console.log(`[${PROVIDER}] No TMDB titles for ${tmdbId}`);
+        return [];
+      }
+      console.log(`[${PROVIDER}] Titles: ${titles.slice(0, 3).join(" | ")}`);
+      const candidates = yield searchCandidates(titles, signal);
+      if (candidates.length === 0) {
+        console.log(`[${PROVIDER}] No search results`);
+        return [];
+      }
+      if (isBudgetExhausted(startTime, BUDGET_MS)) return [];
+      let streams = [];
+      let numericRef = null;
+      if (!isSpecials) {
+        const MAX_CANDIDATES = 3;
+        for (const { item, score } of candidates.slice(0, MAX_CANDIDATES)) {
+          if (isBudgetExhausted(startTime, BUDGET_MS) || isAborted(signal)) break;
+          if (score < 60) break;
+          const itemType = String(item.type || "");
+          const isMovieEntry = /movie/i.test(itemType);
+          if (isMovie !== isMovieEntry && score < 120) continue;
+          let episodeList = null;
+          try {
+            episodeList = yield getEpisodeWindow(item.id, ep, 1, signal);
+          } catch (e) {
+            if (isAborted(signal)) throw e;
+          }
+          const validation = validateEpisode(item, episodeList, ep);
+          if (!validation.ok) {
+            console.log(`[${PROVIDER}] Ep ${ep} hors num\xE9rotation de "${item.slug}" (total=${item.totalEpisodes}) \u2014 candidat suivant`);
+            continue;
+          }
+          const built = yield resolveEntryStreams(item, ep, {
+            epLabel,
+            episodeTitle: validation.episodeTitle,
+            signal
+          });
+          if (built.length > 0) {
+            streams = built;
+            numericRef = { item, epNumber: ep, epTitle: validation.episodeTitle };
+            break;
+          }
+        }
+      }
+      const needTitlePass = !isMovie && (isSpecials || streams.length === 0 || s >= 2);
+      if (needTitlePass && !isBudgetExhausted(startTime, BUDGET_MS) && !isAborted(signal)) {
+        const tmdbEps = yield fetchTmdbSeasonEpisodes(tmdbId, s, signal);
+        if (tmdbEps && tmdbEps.length > 0) {
+          let target = tmdbEps.find((e) => e.number === ep);
+          if (!target && ep >= 1 && ep <= tmdbEps.length) target = tmdbEps[ep - 1];
+          if (target && target.name) {
+            let windowCenter = null;
+            let windowSpan = 0;
+            let numericSuspect = false;
+            const tmdbAbs = target.number;
+            let cumulativeAbs = null;
+            if (!isSpecials && numericRef && titles._metadata && titles._metadata.seasonEpisodeCounts) {
+              const counts = titles._metadata.seasonEpisodeCounts;
+              const countsSeason = parseInt(counts[s], 10) || 0;
+              const total = parseInt(numericRef.item.totalEpisodes, 10) || 0;
+              if (countsSeason > 0 && total > countsSeason * 1.5 && total >= 50) {
+                let abs = ep;
+                for (let k = 1; k < s; k++) abs += parseInt(counts[k], 10) || 0;
+                cumulativeAbs = abs;
+                windowCenter = tmdbAbs != null && Math.abs(tmdbAbs - abs) <= 30 ? tmdbAbs : abs;
+                windowSpan = 30;
+                numericSuspect = windowCenter !== numericRef.epNumber;
+                if (numericSuspect) {
+                  console.log(
+                    `[${PROVIDER}] Num\xE9rotation absolue d\xE9tect\xE9e ("${numericRef.item.slug}", total=${total}) : S${s}E${ep} \u2192 absolu attendu ${windowCenter}, num\xE9rique=${numericRef.epNumber} \u2014 correction`
+                  );
+                }
+              }
+            }
+            const minScore = streams.length > 0 && !numericSuspect ? 95 : 85;
+            const match = yield findBestTitleMatch(
+              candidates,
+              target.name,
+              isSpecials,
+              minScore,
+              signal,
+              startTime,
+              windowCenter != null ? { windowCenter, windowSpan } : {}
+            );
+            if (match) {
+              const isDifferent = !numericRef || match.item.id !== numericRef.item.id || match.epNumber !== numericRef.epNumber;
+              if (streams.length === 0 || isDifferent) {
+                const built = yield resolveEntryStreams(match.item, match.epNumber, {
+                  epLabel,
+                  episodeTitle: match.epTitle,
+                  signal
+                });
+                if (built.length > 0) {
+                  console.log(
+                    `[${PROVIDER}] Mapping titre: TMDB S${s}E${ep} "${target.name}" \u2192 "${match.item.slug}" E${match.epNumber} (score ${match.score})`
+                  );
+                  streams = built;
+                } else if (numericSuspect) {
+                  streams = [];
+                }
+              }
+            } else if (numericSuspect) {
+              console.log(`[${PROVIDER}] \xC9pisode num\xE9rique suspect sans correction fiable \u2014 abandon (0 stream)`);
+              streams = [];
+            }
+          }
+        }
+      }
+      if (streams.length === 0) return [];
+      const resolved = [];
+      let index = 0;
+      for (const st of streams) {
+        try {
+          const r = yield resolveStream(st, index);
+          if (r && r.url) {
+            const _a = r, { isDirect, originalUrl } = _a, clean = __objRest(_a, ["isDirect", "originalUrl"]);
+            resolved.push(__spreadProps(__spreadValues(__spreadValues({}, st), clean), { provider: PROVIDER }));
+          }
+        } catch (e) {
+          if (isAborted(signal)) throw e;
+          console.log(`[${PROVIDER}] resolveStream failed: ${e && e.message} \u2014 serving raw URL`);
+          resolved.push(__spreadProps(__spreadValues({}, st), { provider: PROVIDER }));
+        }
+        index++;
+      }
+      return resolved;
+    });
+  }
+  var PROVIDER, BUDGET_MS, API_BASE, TMDB_API_KEY2, TMDB_BASE, withCache, _cacheBypassFallback, _episodesCache, EPISODES_CACHE_TTL;
+  var init_extractor = __esm({
+    "src/aniverse/extractor.js"() {
+      init_http();
+      init_resolvers();
+      init_metadata();
+      init_cache();
+      PROVIDER = "Aniverse";
+      BUDGET_MS = 4e4;
+      API_BASE = "https://aniverse.fr/api";
+      TMDB_API_KEY2 = "8265bd1679663a7ea12ac168da84d2e8";
+      TMDB_BASE = "https://api.themoviedb.org/3";
+      withCache = typeof createCache === "function" ? createCache("anv", "Aniverse", { successTtl: 10 * 60 * 1e3, maxSize: 80 }) : null;
+      _cacheBypassFallback = /* @__PURE__ */ new Map();
+      _episodesCache = /* @__PURE__ */ new Map();
+      EPISODES_CACHE_TTL = 10 * 60 * 1e3;
+    }
+  });
+
+  // src/aniverse/index.js
+  var require_index = __commonJS({
+    "src/aniverse/index.js"(exports, module) {
+      init_extractor();
+      init_resolvers();
+      module.exports = { getStreams: createProvider("Aniverse", extractStreams) };
+    }
+  });
+  return require_index();
+})();
 
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = __provider;
